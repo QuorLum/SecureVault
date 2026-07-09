@@ -1,0 +1,28 @@
+# Build outputs
+bin/
+obj/
+out/
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# NuGet
+packages/
+
+# Vault test files (large binaries)
+*.vault
+*.vault2
+*.vault3
+*.vault.lock
+*.vault.sha256
+
+# Cache
+AppData/
