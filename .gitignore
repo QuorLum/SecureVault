@@ -26,3 +26,14 @@ packages/
 
 # Cache
 AppData/
+
+# Isolated environment & test results
+.dotnet/
+TestResults/
+
+# Secrets & Environment
+*.env
+*.env.*
+*.key
+*.pem
+*.secret

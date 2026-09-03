@@ -1,0 +1,13 @@
+{
+  "description": "Argon2id key derivation test vectors",
+  "vectors": [
+    {
+      "password": "test_password_123",
+      "salt_hex": "0000000000000000000000000000000000000000000000000000000000000000",
+      "memory_kb": 65536,
+      "iterations": 3,
+      "parallelism": 4,
+      "output_length": 32
+    }
+  ]
+}

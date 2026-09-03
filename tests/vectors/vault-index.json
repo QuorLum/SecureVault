@@ -1,0 +1,6 @@
+{
+  "description": "Test vector for VaultIndex serialization, entry metadata, and dual-index pointers",
+  "sample_file_name": "passwords.txt",
+  "sample_virtual_path": "/Documents/Secure",
+  "sample_protection_mode": 1
+}

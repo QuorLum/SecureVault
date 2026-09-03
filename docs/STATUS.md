@@ -10,73 +10,73 @@
 
 | ID | Feature | Status | Phase |
 |----|---------|--------|-------|
-| A01 | Create new vault with password | 📋 | 1 |
-| A02 | Unlock vault with password | 📋 | 1 |
-| A03 | Lock vault (zero keys) | 📋 | 1 |
-| A04 | Change password | 📋 | 1 |
+| A01 | Create new vault with password | ✅ | 1 |
+| A02 | Unlock vault with password | ✅ | 1 |
+| A03 | Lock vault (zero keys) | ✅ | 1 |
+| A04 | Change password | ✅ | 1 |
 | A05 | Password hint | 📋 | 4 |
-| A06 | Recovery key generation (24-word) | 📋 | 1 |
+| A06 | Recovery key generation (24-word) | ✅ | 1 |
 | A07 | Recovery key unlock | 📋 | 4 |
 | A08 | Auto-lock on idle | 📋 | 4 |
 | A09 | Failed attempt delay | 📋 | 4 |
-| A10 | Vault format version in header | 📋 | 1 |
-| A11 | Vault UUID | 📋 | 1 |
-| A12 | Master key architecture | 📋 | 1 |
-| A13 | Argon2id key derivation | 📋 | 1 |
-| A14 | AES-256-GCM for index encryption | 📋 | 1 |
-| A15 | Fast Obfuscation Mode (XOR) | 📋 | 1 |
-| A16 | AES-256-GCM per-file (Secure Mode) | 📋 | 1 |
+| A10 | Vault format version in header | ✅ | 1 |
+| A11 | Vault UUID | ✅ | 1 |
+| A12 | Master key architecture | ✅ | 1 |
+| A13 | Argon2id key derivation | ✅ | 1 |
+| A14 | AES-256-GCM for index encryption | ✅ | 1 |
+| A15 | Fast Obfuscation Mode (XOR) | ✅ | 1 |
+| A16 | AES-256-GCM per-file (Secure Mode) | ✅ | 1 |
 | A17 | "Encrypt Everything" button | 📋 | 4 |
 | A18 | Toggle protection mode per file | 📋 | 4 |
-| A19 | Dual key-wrap (password + recovery) | 📋 | 1 |
-| A20 | Single-writer file lock | 📋 | 1 |
-| A21 | Key zeroing (pinned buffers) | 📋 | 1 |
+| A19 | Dual key-wrap (password + recovery) | ✅ | 1 |
+| A20 | Single-writer file lock | ✅ | 1 |
+| A21 | Key zeroing (pinned buffers) | ✅ | 1 |
 
 ## CATEGORY B: FILE FORMAT AND STORAGE
 
 | ID | Feature | Status | Phase |
 |----|---------|--------|-------|
-| B01 | Proprietary .vault binary format | 📋 | 1 |
-| B02 | Chunked file storage (1MB) | 📋 | 1 |
-| B03 | Chunk index (offset, size, CRC32, auth tag) | 📋 | 1 |
-| B04 | 64-bit offsets | 📋 | 1 |
-| B05 | Block header per file | 📋 | 1 |
-| B06 | Block footer per file | 📋 | 1 |
-| B07 | Reed-Solomon error correction | 📋 | 1 |
-| B08 | Default RS level (~12% overhead) | 📋 | 1 |
-| B09 | RS level configurable (deferred) | 📋 | 1 |
+| B01 | Proprietary .vault binary format | ✅ | 1 |
+| B02 | Chunked file storage (1MB) | ✅ | 1 |
+| B03 | Chunk index (offset, size, CRC32, auth tag) | ✅ | 1 |
+| B04 | 64-bit offsets | ✅ | 1 |
+| B05 | Block header per file | ✅ | 1 |
+| B06 | Block footer per file | ✅ | 1 |
+| B07 | Reed-Solomon error correction | ✅ | 1 |
+| B08 | Default RS level (~12% overhead) | ✅ | 1 |
+| B09 | RS level configurable (deferred) | ✅ | 1 |
 | B10 | Smart compression selection | 📋 | 1 |
-| B11 | Compression: None | 📋 | 1 |
+| B11 | Compression: None | ✅ | 1 |
 | B12 | Compression: LZ4 | 📋 | 1 |
 | B13 | Compression: Brotli | 📋 | 1 |
 | B14 | Auto-detect compression benefit | 📋 | 1 |
-| B15 | Primary index (encrypted, RS) | 📋 | 1 |
-| B16 | Backup index (encrypted, RS) | 📋 | 1 |
-| B17 | Floating index with pointer chain | 📋 | 1 |
-| B18 | Vault header with encrypted section | 📋 | 1 |
-| B19 | Vault footer with backup pointers | 📋 | 1 |
-| B20 | Random prefix in header | 📋 | 1 |
-| B21 | XOR-masked magic bytes | 📋 | 1 |
-| B22 | Per-chunk unique nonce | 📋 | 1 |
-| B22a | Per-chunk AEAD unit | 📋 | 1 |
+| B15 | Primary index (encrypted, RS) | ✅ | 1 |
+| B16 | Backup index (encrypted, RS) | ✅ | 1 |
+| B17 | Floating index with pointer chain | ✅ | 1 |
+| B18 | Vault header with encrypted section | ✅ | 1 |
+| B19 | Vault footer with backup pointers | ✅ | 1 |
+| B20 | Random prefix in header | ✅ | 1 |
+| B21 | XOR-masked magic bytes | ✅ | 1 |
+| B22 | Per-chunk unique nonce | ✅ | 1 |
+| B22a | Per-chunk AEAD unit | ✅ | 1 |
 | B23 | 200GB per vault limit | 📋 | 5 |
 | B24 | Multi-vault linking | 📋 | 5 |
 | B25 | Cross-vault verification | 📋 | 5 |
 | B26 | Vault manifest | 📋 | 5 |
-| B27 | RS uses library (no custom impl) | 📋 | 1 |
+| B27 | RS uses library (no custom impl) | ✅ | 1 |
 
 ## CATEGORY C: FILE OPERATIONS
 
 | ID | Feature | Status | Phase |
 |----|---------|--------|-------|
-| C01 | Add single file | 📋 | 1 |
+| C01 | Add single file | ✅ | 1 |
 | C02 | Add multiple files | 📋 | 2 |
 | C03 | Add folder recursively | 📋 | 2 |
 | C04 | Drag and drop | 📋 | 2 |
-| C05 | Streaming file addition | 📋 | 1 |
-| C06 | SHA-256 on plaintext | 📋 | 1 |
+| C05 | Streaming file addition | ✅ | 1 |
+| C06 | SHA-256 on plaintext | ✅ | 1 |
 | C07 | Progress reporting | 📋 | 2 |
-| C08 | Delete file (soft delete) | 📋 | 1 |
+| C08 | Delete file (soft delete) | ✅ | 1 |
 | C09 | Delete multiple files | 📋 | 2 |
 | C10 | Rename file | 📋 | 2 |
 | C11 | Move file | 📋 | 2 |
@@ -84,9 +84,9 @@
 | C13 | Export single file | 📋 | 2 |
 | C14 | Export multiple files | 📋 | 2 |
 | C15 | Export folder | 📋 | 2 |
-| C16 | Read file to memory | 📋 | 1 |
-| C17 | Read file as stream | 📋 | 1 |
-| C18 | VaultFileStream with chunk seeking | 📋 | 1 |
+| C16 | Read file to memory | ✅ | 1 |
+| C17 | Read file as stream | ✅ | 1 |
+| C18 | VaultFileStream with chunk seeking | ✅ | 1 |
 | C19 | Read-ahead prefetch | 📋 | 4 |
 | C20 | Replace file data | 📋 | 6 |
 | C21 | Duplicate detection | 📋 | 6 |
@@ -149,20 +149,20 @@
 
 | ID | Feature | Status | Phase |
 |----|---------|--------|-------|
-| F01 | RS error correction on every chunk | 📋 | 1 |
-| F02 | Auto-repair corrupted chunks | 📋 | 1 |
+| F01 | RS error correction on every chunk | ✅ | 1 |
+| F02 | Auto-repair corrupted chunks | ✅ | 1 |
 | F03 | Log + re-verify auto-repairs | 📋 | 6 |
-| F04 | Full vault integrity check | 📋 | 1 |
-| F05 | Repair vault | 📋 | 1 |
-| F06 | Dual index | 📋 | 1 |
-| F07 | Atomic writes | 📋 | 1 |
-| F08 | Write-ahead for index | 📋 | 1 |
-| F09 | Block isolation | 📋 | 1 |
+| F04 | Full vault integrity check | ✅ | 1 |
+| F05 | Repair vault | ✅ | 1 |
+| F06 | Dual index | ✅ | 1 |
+| F07 | Atomic writes | ✅ | 1 |
+| F08 | Write-ahead for index | ✅ | 1 |
+| F09 | Block isolation | ✅ | 1 |
 | F10 | Recovery mode scan | 📋 | 6 |
-| F11 | Per-chunk CRC32 | 📋 | 1 |
-| F12 | Per-file SHA-256 | 📋 | 1 |
-| F13 | Per-chunk AES-GCM auth tag | 📋 | 1 |
-| F14 | HMAC on vault header | 📋 | 1 |
+| F11 | Per-chunk CRC32 | ✅ | 1 |
+| F12 | Per-file SHA-256 | ✅ | 1 |
+| F13 | Per-chunk AES-GCM auth tag | ✅ | 1 |
+| F14 | HMAC on vault header | ✅ | 1 |
 | F15 | Integrity report | 📋 | 6 |
 | F16 | Background auto-repair | 📋 | 6 |
 
@@ -303,24 +303,24 @@
 
 | ID | Feature | Status | Phase |
 |----|---------|--------|-------|
-| M01 | Argon2id (256MB, 3 iter, 4 parallel) | 📋 | 1 |
-| M02 | AES-256-GCM for Secure Mode | 📋 | 1 |
-| M03 | Unique nonce per chunk | 📋 | 1 |
-| M04 | Master key zeroed on lock | 📋 | 1 |
-| M05 | Obfuscation key zeroed on lock | 📋 | 1 |
-| M06 | No decrypted data to disk | 📋 | 1 |
+| M01 | Argon2id (256MB, 3 iter, 4 parallel) | ✅ | 1 |
+| M02 | AES-256-GCM for Secure Mode | ✅ | 1 |
+| M03 | Unique nonce per chunk | ✅ | 1 |
+| M04 | Master key zeroed on lock | ✅ | 1 |
+| M05 | Obfuscation key zeroed on lock | ✅ | 1 |
+| M06 | No decrypted data to disk | ✅ | 1 |
 | M07 | Secure temp file deletion | 📋 | 6 |
 | M08 | Auto-lock on system lock | 📋 | 4 |
 | M09 | Auto-lock on idle | 📋 | 4 |
 | M10 | Auto-lock on minimize | 📋 | 6 |
 | M11 | Brute force delay | 📋 | 2 |
-| M12 | Proprietary format | 📋 | 1 |
-| M13 | Encrypted index | 📋 | 1 |
-| M14 | XOR keystream (HKDF, per-file) | 📋 | 1 |
+| M12 | Proprietary format | ✅ | 1 |
+| M13 | Encrypted index | ✅ | 1 |
+| M14 | XOR keystream (HKDF, per-file) | ✅ | 1 |
 | M15 | No file signatures visible | 📋 | 6 |
-| M16 | Constant-time comparison | 📋 | 1 |
+| M16 | Constant-time comparison | ✅ | 1 |
 | M17 | Screen capture protection | 📋 | 6 |
-| M18 | VeraCrypt design study | 📋 | 1 |
+| M18 | VeraCrypt design study | ✅ | 1 |
 
 ## CATEGORY N: USER INTERFACE
 

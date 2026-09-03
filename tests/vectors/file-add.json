@@ -1,0 +1,7 @@
+{
+  "description": "Test vector for FileAddOperation streaming chunking, SHA-256 verification, and block headers",
+  "block_header_size": 66,
+  "block_footer_size": 52,
+  "expected_block_header_magic": "BLKH",
+  "expected_block_footer_magic": "BLKF"
+}

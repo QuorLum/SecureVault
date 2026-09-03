@@ -1,0 +1,6 @@
+{
+  "description": "Test vector for Fast Obfuscation Mode position-dependent AES-CTR keystream",
+  "info_prefix": "SecureVault-XOR-Keystream-v1:",
+  "salt_length": 16,
+  "test_buffer_length": 256
+}

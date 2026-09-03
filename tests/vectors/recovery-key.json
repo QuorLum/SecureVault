@@ -1,0 +1,12 @@
+{
+  "description": "Standard BIP-39 test vector for 256-bit entropy to 24 English words",
+  "entropy_hex": "0000000000000000000000000000000000000000000000000000000000000000",
+  "expected_words": [
+    "abandon", "abandon", "abandon", "abandon",
+    "abandon", "abandon", "abandon", "abandon",
+    "abandon", "abandon", "abandon", "abandon",
+    "abandon", "abandon", "abandon", "abandon",
+    "abandon", "abandon", "abandon", "abandon",
+    "abandon", "abandon", "abandon", "art"
+  ]
+}

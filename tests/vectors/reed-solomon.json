@@ -1,0 +1,8 @@
+{
+  "description": "Test vector for Reed-Solomon RS(255, 223) codec over GF(2^8)",
+  "data_block_size": 223,
+  "parity_block_size": 32,
+  "total_block_size": 255,
+  "max_correctable_errors": 16,
+  "uncorrectable_error_threshold": 17
+}

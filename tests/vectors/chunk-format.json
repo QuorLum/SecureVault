@@ -1,0 +1,7 @@
+{
+  "description": "Test vector for chunk format layout, 39-byte header, and AEAD encryption",
+  "chunk_header_size": 39,
+  "test_payload_size": 1024,
+  "protection_mode_secure": 1,
+  "protection_mode_fast": 0
+}

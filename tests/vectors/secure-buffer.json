@@ -1,0 +1,7 @@
+{
+  "description": "Test vector for SecureBuffer allocation, pattern filling, and memory scrubbing",
+  "buffer_size": 32,
+  "test_pattern_byte": 170,
+  "test_pattern_hex": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "expected_zeroed_hex": "0000000000000000000000000000000000000000000000000000000000000000"
+}
