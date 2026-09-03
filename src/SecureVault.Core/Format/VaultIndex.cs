@@ -63,6 +63,12 @@ public sealed class IndexEntry
 
     [Key(18)]
     public bool IsFavorite { get; set; }
+
+    [Key(19)]
+    public bool IsFolder { get; set; }
+
+    [Key(20)]
+    public Guid? ParentFolderGuid { get; set; }
 }
 
 [MessagePackObject]
@@ -70,15 +76,21 @@ public sealed class VaultIndexData
 {
     [Key(0)]
     public List<IndexEntry> Entries { get; set; } = new();
+
+    [Key(1)]
+    public ulong IndexVersion { get; set; } = 1;
 }
 
 public sealed class VaultIndex
 {
-    public List<IndexEntry> Entries { get; } = new();
+    private readonly List<IndexEntry> _entries = new();
+
+    public List<IndexEntry> Entries => _entries;
+    public ulong Version { get; set; } = 1;
 
     public byte[] Serialize()
     {
-        var data = new VaultIndexData { Entries = Entries };
+        var data = new VaultIndexData { Entries = Entries, IndexVersion = Version };
         return MessagePackSerializer.Serialize(data);
     }
 
@@ -86,9 +98,13 @@ public sealed class VaultIndex
     {
         var data = MessagePackSerializer.Deserialize<VaultIndexData>(bytes.ToArray());
         var index = new VaultIndex();
-        if (data?.Entries != null)
+        if (data != null)
         {
-            index.Entries.AddRange(data.Entries);
+            if (data.Entries != null)
+            {
+                index.Entries.AddRange(data.Entries);
+            }
+            index.Version = data.IndexVersion;
         }
         return index;
     }
@@ -97,13 +113,14 @@ public sealed class VaultIndex
     /// Writes the index to disk encrypted and RS-encoded.
     /// Dual write: primary index and backup index.
     /// </summary>
-    public (ulong primaryOffset, ulong primaryLength, ulong backupOffset, ulong backupLength) WriteToVault(
+    public (ulong primaryOffset, uint primaryLength, ulong backupOffset, uint backupLength) WriteToVault(
         Stream stream,
         EncryptionService encryption,
         ReedSolomonCodec rsCodec)
     {
-        byte[] rawBytes = Serialize();
-        var (ciphertext, nonce, tag) = encryption.EncryptIndex(rawBytes);
+        Version++;
+        byte[] serialized = Serialize();
+        var (ciphertext, nonce, tag) = encryption.EncryptIndex(serialized);
 
         // Header for index payload on disk: 12-byte nonce + 16-byte tag + 4-byte ciphertext len + ciphertext + RS parity
         byte[] rsParity = rsCodec.Encode(ciphertext);
@@ -118,12 +135,12 @@ public sealed class VaultIndex
         // Primary Index write
         ulong primaryOffset = (ulong)stream.Position;
         stream.Write(payload);
-        ulong primaryLength = (ulong)payload.Length;
+        uint primaryLength = (uint)payload.Length;
 
         // Backup Index write
         ulong backupOffset = (ulong)stream.Position;
         stream.Write(payload);
-        ulong backupLength = (ulong)payload.Length;
+        uint backupLength = (uint)payload.Length;
 
         return (primaryOffset, primaryLength, backupOffset, backupLength);
     }

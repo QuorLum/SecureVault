@@ -1,0 +1,80 @@
+<Page
+    x:Class="SecureVault.App.Views.MainLibraryPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="using:SecureVault.App.Views"
+    xmlns:vm="using:SecureVault.App.ViewModels"
+    mc:Ignorable="d"
+    Background="Transparent">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar Navigation -->
+        <local:SidebarControl Grid.Column="0" DataContext="{x:Bind ViewModel, Mode=OneWay}" />
+
+        <!-- Main Explorer Area -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Top Toolbar -->
+            <local:ToolbarControl Grid.Row="0" DataContext="{x:Bind ViewModel, Mode=OneWay}" />
+
+            <!-- Path Breadcrumb and Category Header -->
+            <Border Grid.Row="1" Background="#0C0C0E" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,0,0,1" Padding="20,8">
+                <Grid>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE8DA;" FontSize="13" Foreground="{StaticResource TextTertiaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{x:Bind ViewModel.CurrentFolderPath, Mode=OneWay}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Virtualized 60fps Grid -->
+            <local:VirtualizedFileGrid Grid.Row="2" DataContext="{x:Bind ViewModel, Mode=OneWay}" />
+
+            <!-- Bottom Status Bar -->
+            <local:StatusBarControl Grid.Row="3" DataContext="{x:Bind ViewModel, Mode=OneWay}" />
+        </Grid>
+
+        <!-- Operation Progress Modal Overlay -->
+        <Grid Grid.ColumnSpan="2" 
+              Background="#B0000000" 
+              Visibility="{x:Bind ViewModel.IsOperationRunning, Mode=OneWay, Converter={StaticResource BoolToVisibleConverter}}">
+            <Border HorizontalAlignment="Center" 
+                    VerticalAlignment="Center" 
+                    Width="420" 
+                    Style="{StaticResource ElevatedCardStyle}" 
+                    Padding="24">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="{x:Bind ViewModel.OperationTitle, Mode=OneWay}" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                    <TextBlock Text="{x:Bind ViewModel.OperationStatusText, Mode=OneWay}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+
+                    <ProgressBar Value="{x:Bind ViewModel.OperationProgressPercentage, Mode=OneWay}" Maximum="100" Height="6" CornerRadius="3" Foreground="{StaticResource AppAccentBrush}" />
+
+                    <Grid>
+                        <TextBlock Text="{x:Bind ViewModel.OperationSpeedText, Mode=OneWay}" FontSize="11" Foreground="{StaticResource TextTertiaryBrush}" HorizontalAlignment="Left" />
+                        <TextBlock Text="{x:Bind ViewModel.OperationEtaText, Mode=OneWay}" FontSize="11" Foreground="{StaticResource TextTertiaryBrush}" HorizontalAlignment="Right" />
+                    </Grid>
+
+                    <Button Content="Cancel" 
+                            Command="{x:Bind ViewModel.CancelOperationCommand, Mode=OneWay}" 
+                            HorizontalAlignment="Right" 
+                            FontSize="12" 
+                            Padding="16,6" 
+                            CornerRadius="{StaticResource ButtonCornerRadius}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

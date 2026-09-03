@@ -1,0 +1,154 @@
+<Page
+    x:Class="SecureVault.App.Views.LoginPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:SecureVault.App.ViewModels"
+    mc:Ignorable="d"
+    Background="Transparent">
+
+    <Grid>
+        <!-- Centered Login Card -->
+        <Border HorizontalAlignment="Center" 
+                VerticalAlignment="Center" 
+                Width="460"
+                Style="{StaticResource ElevatedCardStyle}"
+                Padding="32">
+            <StackPanel Spacing="20">
+                <!-- Branding Header -->
+                <StackPanel HorizontalAlignment="Center" Spacing="6">
+                    <Border Background="#1E1B4B" 
+                            BorderBrush="#4338CA" 
+                            BorderThickness="1" 
+                            Width="54" 
+                            Height="54" 
+                            CornerRadius="27" 
+                            HorizontalAlignment="Center">
+                        <FontIcon Glyph="&#xE72E;" Foreground="{StaticResource AppAccentBrush}" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Text="SecureVault" 
+                               FontSize="24" 
+                               FontWeight="Bold" 
+                               Foreground="{StaticResource TextPrimaryBrush}" 
+                               HorizontalAlignment="Center" />
+                    <TextBlock Text="Zero-Knowledge Hardware-Grade Protection" 
+                               FontSize="12" 
+                               Foreground="{StaticResource TextSecondaryBrush}" 
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+
+                <!-- Vault File Selector -->
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Vault File" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox Text="{x:Bind ViewModel.VaultPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                 PlaceholderText="Select or enter .vault path" 
+                                 FontSize="13" 
+                                 AutomationProperties.Name="Vault Path" />
+                        <Button Grid.Column="1" 
+                                Command="{x:Bind ViewModel.BrowseVaultCommand}" 
+                                ToolTipService.ToolTip="Browse Vault File" 
+                                AutomationProperties.Name="Browse Vault">
+                            <FontIcon Glyph="&#xED25;" FontSize="14" />
+                        </Button>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Mode 1: Password Unlock -->
+                <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.ShowRecoveryInput, Mode=OneWay, Converter={StaticResource BoolToCollapsedConverter}}">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Master Password" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <PasswordBox x:Name="MasterPasswordBox" 
+                                     Password="{x:Bind ViewModel.Password, Mode=TwoWay}" 
+                                     PlaceholderText="Enter vault password" 
+                                     FontSize="13" 
+                                     PasswordRevealMode="Peek" 
+                                     AutomationProperties.Name="Master Password" />
+                    </StackPanel>
+
+                    <Button Content="Unlock Vault" 
+                            Command="{x:Bind ViewModel.UnlockCommand}" 
+                            Style="{StaticResource AccentButtonStyle}" 
+                            HorizontalAlignment="Stretch" 
+                            Height="38" 
+                            AutomationProperties.Name="Unlock Vault" />
+
+                    <Grid>
+                        <HyperlinkButton Content="Unlock with 24-word Recovery Key" 
+                                         Command="{x:Bind ViewModel.ToggleRecoveryModeCommand}" 
+                                         FontSize="12" 
+                                         HorizontalAlignment="Left" />
+                        <HyperlinkButton Content="Create New Vault" 
+                                         Command="{x:Bind ViewModel.CreateVaultCommand}" 
+                                         FontSize="12" 
+                                         HorizontalAlignment="Right" />
+                    </Grid>
+                </StackPanel>
+
+                <!-- Mode 2: Recovery Key Unlock -->
+                <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.ShowRecoveryInput, Mode=OneWay, Converter={StaticResource BoolToVisibleConverter}}">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="24-Word Recovery Phrase" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBox Text="{x:Bind ViewModel.RecoveryWordsInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                 PlaceholderText="abandon ability able about ..." 
+                                 AcceptsReturn="True" 
+                                 TextWrapping="Wrap" 
+                                 Height="80" 
+                                 FontSize="12" 
+                                 FontFamily="Consolas, monospace" 
+                                 AutomationProperties.Name="Recovery Words" />
+                    </StackPanel>
+
+                    <Button Content="Unlock via Recovery Key" 
+                            Command="{x:Bind ViewModel.UnlockWithRecoveryCommand}" 
+                            Style="{StaticResource AccentButtonStyle}" 
+                            HorizontalAlignment="Stretch" 
+                            Height="38" />
+
+                    <HyperlinkButton Content="Back to Password Unlock" 
+                                     Command="{x:Bind ViewModel.ToggleRecoveryModeCommand}" 
+                                     FontSize="12" 
+                                     HorizontalAlignment="Center" />
+                </StackPanel>
+
+                <!-- Progress Ring on Busy -->
+                <StackPanel Orientation="Horizontal" 
+                            Spacing="12" 
+                            HorizontalAlignment="Center" 
+                            Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BoolToVisibleConverter}}">
+                    <ProgressRing IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" Width="20" Height="20" />
+                    <TextBlock Text="{x:Bind ViewModel.BusyMessage, Mode=OneWay}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- Brute Force Lockout Banner (M11) -->
+                <Border Background="{StaticResource WarningBgBrush}" 
+                        BorderBrush="{StaticResource WarningBrush}" 
+                        BorderThickness="1" 
+                        CornerRadius="{StaticResource CardCornerRadius}" 
+                        Padding="10" 
+                        Visibility="{x:Bind ViewModel.IsLockedOut, Mode=OneWay, Converter={StaticResource BoolToVisibleConverter}}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE7BA;" Foreground="{StaticResource WarningBrush}" FontSize="16" />
+                        <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" 
+                                   Foreground="{StaticResource WarningBrush}" 
+                                   FontSize="12" 
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Regular Error Message -->
+                <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" 
+                           Foreground="{StaticResource DangerBrush}" 
+                           FontSize="12" 
+                           TextWrapping="Wrap" 
+                           HorizontalAlignment="Center"
+                           Visibility="{x:Bind ViewModel.IsLockedOut, Mode=OneWay, Converter={StaticResource BoolToCollapsedConverter}}" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>

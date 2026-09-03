@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SecureVault.App (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "SecureVault.App (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

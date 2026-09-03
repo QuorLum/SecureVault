@@ -1,0 +1,13 @@
+{
+  "description": "Test vector for exponential backoff brute-force delay: min(2 ^ attempts, 60)",
+  "cases": [
+    { "failed_attempts": 0, "expected_delay_seconds": 0 },
+    { "failed_attempts": 1, "expected_delay_seconds": 2 },
+    { "failed_attempts": 2, "expected_delay_seconds": 4 },
+    { "failed_attempts": 3, "expected_delay_seconds": 8 },
+    { "failed_attempts": 4, "expected_delay_seconds": 16 },
+    { "failed_attempts": 5, "expected_delay_seconds": 32 },
+    { "failed_attempts": 6, "expected_delay_seconds": 60 },
+    { "failed_attempts": 10, "expected_delay_seconds": 60 }
+  ]
+}

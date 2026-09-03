@@ -1,0 +1,84 @@
+<UserControl
+    x:Class="SecureVault.App.Views.SidebarControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:org="using:SecureVault.Core.Organization"
+    mc:Ignorable="d">
+
+    <Grid Background="#0D0D10" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,0,1,0" Width="240">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="6" Padding="12,16">
+                <!-- Library Section -->
+                <TextBlock Text="LIBRARY" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextTertiaryBrush}" Margin="8,0,0,4" />
+
+                <Button x:Name="AllFilesBtn" Click="OnAllFilesClicked" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Background="Transparent" BorderThickness="0" Padding="8,6">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <FontIcon Glyph="&#xE8B7;" FontSize="16" Foreground="{StaticResource AppAccentBrush}" />
+                        <TextBlock Text="All Files" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <Button x:Name="FavoritesBtn" Click="OnFavoritesClicked" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Background="Transparent" BorderThickness="0" Padding="8,6">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <FontIcon Glyph="&#xE735;" FontSize="16" Foreground="#F59E0B" />
+                        <TextBlock Text="Favorites" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Categories Section -->
+                <TextBlock Text="CATEGORIES" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextTertiaryBrush}" Margin="8,16,0,4" />
+
+                <Button Click="OnCategoryPhotosClicked" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Background="Transparent" BorderThickness="0" Padding="8,5">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <FontIcon Glyph="&#xEB9F;" FontSize="15" Foreground="#38BDF8" />
+                        <TextBlock Text="Photos" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <Button Click="OnCategoryVideosClicked" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Background="Transparent" BorderThickness="0" Padding="8,5">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <FontIcon Glyph="&#xE714;" FontSize="15" Foreground="#A855F7" />
+                        <TextBlock Text="Videos" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <Button Click="OnCategoryAudioClicked" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Background="Transparent" BorderThickness="0" Padding="8,5">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <FontIcon Glyph="&#xE8D6;" FontSize="15" Foreground="#EC4899" />
+                        <TextBlock Text="Audio" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <Button Click="OnCategoryDocumentsClicked" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Background="Transparent" BorderThickness="0" Padding="8,5">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <FontIcon Glyph="&#xE8A5;" FontSize="15" Foreground="#10B981" />
+                        <TextBlock Text="Documents" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <Button Click="OnCategoryNotesClicked" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Background="Transparent" BorderThickness="0" Padding="8,5">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <FontIcon Glyph="&#xE70B;" FontSize="15" Foreground="#F59E0B" />
+                        <TextBlock Text="Notes" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <Button Click="OnCategoryAppsClicked" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Background="Transparent" BorderThickness="0" Padding="8,5">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <FontIcon Glyph="&#xE7B8;" FontSize="15" Foreground="#6366F1" />
+                        <TextBlock Text="Applications" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <Button Click="OnCategoryArchivesClicked" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Background="Transparent" BorderThickness="0" Padding="8,5">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <FontIcon Glyph="&#xF012;" FontSize="15" Foreground="#EAB308" />
+                        <TextBlock Text="Archives" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

@@ -70,20 +70,20 @@
 | ID | Feature | Status | Phase |
 |----|---------|--------|-------|
 | C01 | Add single file | ✅ | 1 |
-| C02 | Add multiple files | 📋 | 2 |
-| C03 | Add folder recursively | 📋 | 2 |
+| C02 | Add multiple files | ✅ | 2 |
+| C03 | Add folder recursively | ✅ | 2 |
 | C04 | Drag and drop | 📋 | 2 |
 | C05 | Streaming file addition | ✅ | 1 |
 | C06 | SHA-256 on plaintext | ✅ | 1 |
-| C07 | Progress reporting | 📋 | 2 |
+| C07 | Progress reporting | ✅ | 2 |
 | C08 | Delete file (soft delete) | ✅ | 1 |
-| C09 | Delete multiple files | 📋 | 2 |
-| C10 | Rename file | 📋 | 2 |
-| C11 | Move file | 📋 | 2 |
-| C12 | Copy file | 📋 | 2 |
-| C13 | Export single file | 📋 | 2 |
-| C14 | Export multiple files | 📋 | 2 |
-| C15 | Export folder | 📋 | 2 |
+| C09 | Delete multiple files | ✅ | 2 |
+| C10 | Rename file | ✅ | 2 |
+| C11 | Move file | ✅ | 2 |
+| C12 | Copy file | ✅ | 2 |
+| C13 | Export single file | ✅ | 2 |
+| C14 | Export multiple files | ✅ | 2 |
+| C15 | Export folder | ✅ | 2 |
 | C16 | Read file to memory | ✅ | 1 |
 | C17 | Read file as stream | ✅ | 1 |
 | C18 | VaultFileStream with chunk seeking | ✅ | 1 |
@@ -98,21 +98,21 @@
 
 | ID | Feature | Status | Phase |
 |----|---------|--------|-------|
-| D01 | Virtual folder system | 📋 | 2 |
-| D02 | Create/rename/delete folders | 📋 | 2 |
-| D03 | File categories | 📋 | 2 |
-| D04 | Auto-categorization | 📋 | 2 |
-| D05 | Tags per file | 📋 | 2 |
-| D06 | Favorites | 📋 | 2 |
-| D07 | Notes/description per file | 📋 | 2 |
-| D08 | Search by filename | 📋 | 2 |
-| D09 | Search by tags | 📋 | 2 |
-| D10 | Search by notes | 📋 | 2 |
-| D11 | Search by type/category | 📋 | 2 |
-| D12 | Search by date range | 📋 | 2 |
-| D13 | Search by size range | 📋 | 2 |
-| D14 | Search by protection level | 📋 | 2 |
-| D15 | Sort by name/date/size/type | 📋 | 2 |
+| D01 | Virtual folder system | ✅ | 2 |
+| D02 | Create/rename/delete folders | ✅ | 2 |
+| D03 | File categories | ✅ | 2 |
+| D04 | Auto-categorization | ✅ | 2 |
+| D05 | Tags per file | ✅ | 2 |
+| D06 | Favorites | ✅ | 2 |
+| D07 | Notes/description per file | ✅ | 2 |
+| D08 | Search by filename | ✅ | 2 |
+| D09 | Search by tags | ✅ | 2 |
+| D10 | Search by notes | ✅ | 2 |
+| D11 | Search by type/category | ✅ | 2 |
+| D12 | Search by date range | ✅ | 2 |
+| D13 | Search by size range | ✅ | 2 |
+| D14 | Search by protection level | ✅ | 2 |
+| D15 | Sort by name/date/size/type | ✅ | 2 |
 | D16 | Filter by favorites | 📋 | 6 |
 | D17 | Albums for photos | 📋 | 6 |
 | D18 | Playlists for audio/video | 📋 | 6 |
@@ -124,13 +124,13 @@
 
 | ID | Feature | Status | Phase |
 |----|---------|--------|-------|
-| E01 | Encrypted cache file | 📋 | 2 |
-| E02 | Cache contents | 📋 | 2 |
-| E03 | Instant startup from cache | 📋 | 2 |
-| E04 | Background cache freshness | 📋 | 2 |
-| E05 | Incremental cache update | 📋 | 2 |
-| E06 | Progressive loading | 📋 | 2 |
-| E07 | Virtualized UI lists | 📋 | 2 |
+| E01 | Encrypted cache file | ✅ | 2 |
+| E02 | Cache contents | ✅ | 2 |
+| E03 | Instant startup from cache | ✅ | 2 |
+| E04 | Background cache freshness | ✅ | 2 |
+| E05 | Incremental cache update | ✅ | 2 |
+| E06 | Progressive loading | ✅ | 2 |
+| E07 | Virtualized UI lists | ✅ | 2 |
 | E08 | Background thumbnail generation | 📋 | 4 |
 | E09 | Thumbnail format: WebP 200x200 | 📋 | 4 |
 | E10 | Image thumbnails | 📋 | 4 |
@@ -313,7 +313,7 @@
 | M08 | Auto-lock on system lock | 📋 | 4 |
 | M09 | Auto-lock on idle | 📋 | 4 |
 | M10 | Auto-lock on minimize | 📋 | 6 |
-| M11 | Brute force delay | 📋 | 2 |
+| M11 | Brute force delay | ✅ | 2 |
 | M12 | Proprietary format | ✅ | 1 |
 | M13 | Encrypted index | ✅ | 1 |
 | M14 | XOR keystream (HKDF, per-file) | ✅ | 1 |
@@ -326,15 +326,15 @@
 
 | ID | Feature | Status | Phase |
 |----|---------|--------|-------|
-| N01 | WinUI 3 project setup | 📋 | 2 |
-| N02 | Login screen | 📋 | 2 |
-| N03 | Password hint display | 📋 | 2 |
-| N04 | Recovery key entry | 📋 | 2 |
-| N05 | Main library view | 📋 | 2 |
-| N06 | Sidebar | 📋 | 2 |
-| N07 | Toolbar | 📋 | 2 |
-| N08 | Status bar | 📋 | 2 |
-| N09 | File grid view | 📋 | 2 |
+| N01 | WinUI 3 project setup | ✅ | 2 |
+| N02 | Login screen | ✅ | 2 |
+| N03 | Password hint display | ✅ | 2 |
+| N04 | Recovery key entry | ✅ | 2 |
+| N05 | Main library view | ✅ | 2 |
+| N06 | Sidebar | ✅ | 2 |
+| N07 | Toolbar | ✅ | 2 |
+| N08 | Status bar | ✅ | 2 |
+| N09 | File grid view | ✅ | 2 |
 | N10 | File list view | 📋 | 6 |
 | N11 | File timeline view | 📋 | 6 |
 | N12 | Context menu | 📋 | 6 |
@@ -348,7 +348,7 @@
 | N20 | Window state persistence | 📋 | 6 |
 | N21 | Fluent Design | 📋 | 6 |
 | N22 | Responsive layout | 📋 | 6 |
-| N23 | Recovery key confirmation gate | 📋 | 2 |
+| N23 | Recovery key confirmation gate | ✅ | 2 |
 
 ## CATEGORY O: MULTI-VAULT SYSTEM
 

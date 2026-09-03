@@ -1,0 +1,21 @@
+{
+  "description": "Test vector for file extension auto-categorization",
+  "mappings": [
+    { "filename": "portrait.JPG", "category": "Photos" },
+    { "filename": "camera_raw.dng", "category": "Photos" },
+    { "filename": "vacation.heic", "category": "Photos" },
+    { "filename": "movie.MKV", "category": "Videos" },
+    { "filename": "clip.mp4", "category": "Videos" },
+    { "filename": "song.flac", "category": "Audio" },
+    { "filename": "track.mp3", "category": "Audio" },
+    { "filename": "contract.pdf", "category": "Documents" },
+    { "filename": "spreadsheet.XLSX", "category": "Documents" },
+    { "filename": "notes.md", "category": "TextNotes" },
+    { "filename": "script.py", "category": "TextNotes" },
+    { "filename": "setup.exe", "category": "Applications" },
+    { "filename": "archive.tar.gz", "category": "Archives" },
+    { "filename": "backup.7z", "category": "Archives" },
+    { "filename": "data.unknown_format", "category": "Other" },
+    { "filename": "no_extension", "category": "Other" }
+  ]
+}

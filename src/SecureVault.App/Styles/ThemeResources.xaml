@@ -1,0 +1,84 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Color Palette Tokens -->
+    <Color x:Key="AppBackgroundDarkColor">#09090B</Color>
+    <Color x:Key="AppCardBackgroundDarkColor">#131316</Color>
+    <Color x:Key="AppCardHoverDarkColor">#1C1C21</Color>
+    <Color x:Key="AppBorderDarkColor">#27272A</Color>
+    <Color x:Key="AppBorderHoverDarkColor">#3F3F46</Color>
+    
+    <Color x:Key="AppAccentIndigoColor">#6366F1</Color>
+    <Color x:Key="AppAccentVioletColor">#8B5CF6</Color>
+    <Color x:Key="AppAccentHoverColor">#4F46E5</Color>
+
+    <Color x:Key="TextPrimaryColor">#F8FAFC</Color>
+    <Color x:Key="TextSecondaryColor">#94A3B8</Color>
+    <Color x:Key="TextTertiaryColor">#64748B</Color>
+
+    <Color x:Key="SecureModeColor">#10B981</Color>
+    <Color x:Key="SecureModeBgColor">#064E3B</Color>
+
+    <Color x:Key="FastModeColor">#06B6D4</Color>
+    <Color x:Key="FastModeBgColor">#164E63</Color>
+
+    <Color x:Key="WarningColor">#F59E0B</Color>
+    <Color x:Key="WarningBgColor">#3B2D05</Color>
+    <Color x:Key="DangerColor">#F43F5E</Color>
+
+    <!-- SolidColorBrushes -->
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackgroundDarkColor}" />
+    <SolidColorBrush x:Key="AppCardBrush" Color="{StaticResource AppCardBackgroundDarkColor}" />
+    <SolidColorBrush x:Key="AppCardHoverBrush" Color="{StaticResource AppCardHoverDarkColor}" />
+    <SolidColorBrush x:Key="AppBorderBrush" Color="{StaticResource AppBorderDarkColor}" />
+    <SolidColorBrush x:Key="AppBorderHoverBrush" Color="{StaticResource AppBorderHoverDarkColor}" />
+    <SolidColorBrush x:Key="AppAccentBrush" Color="{StaticResource AppAccentIndigoColor}" />
+    <SolidColorBrush x:Key="AppAccentHoverBrush" Color="{StaticResource AppAccentHoverColor}" />
+
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
+    <SolidColorBrush x:Key="TextTertiaryBrush" Color="{StaticResource TextTertiaryColor}" />
+
+    <SolidColorBrush x:Key="SecureModeBrush" Color="{StaticResource SecureModeColor}" />
+    <SolidColorBrush x:Key="SecureModeBgBrush" Color="{StaticResource SecureModeBgColor}" />
+    <SolidColorBrush x:Key="FastModeBrush" Color="{StaticResource FastModeColor}" />
+    <SolidColorBrush x:Key="FastModeBgBrush" Color="{StaticResource FastModeBgColor}" />
+    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}" />
+    <SolidColorBrush x:Key="WarningBgBrush" Color="{StaticResource WarningBgColor}" />
+    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}" />
+
+    <!-- Corner Radius Tokens -->
+    <CornerRadius x:Key="CardCornerRadius">10</CornerRadius>
+    <CornerRadius x:Key="ButtonCornerRadius">6</CornerRadius>
+    <CornerRadius x:Key="BadgeCornerRadius">4</CornerRadius>
+    <CornerRadius x:Key="DialogCornerRadius">12</CornerRadius>
+
+    <!-- Elevated Card Style -->
+    <Style x:Key="ElevatedCardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource AppCardBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource CardCornerRadius}" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+
+    <!-- Primary Action Button Style -->
+    <Style x:Key="AccentButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource AppAccentBrush}" />
+        <Setter Property="Foreground" Value="#FFFFFF" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="CornerRadius" Value="{StaticResource ButtonCornerRadius}" />
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <!-- Badge Tag Style -->
+    <Style x:Key="BadgeBorderStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="{StaticResource BadgeCornerRadius}" />
+        <Setter Property="Padding" Value="8,3" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+</ResourceDictionary>

@@ -49,6 +49,14 @@ public static class AtomicWriter
     }
 
     /// <summary>
+    /// Atomically writes an entire byte array to destinationPath using atomic file rename and disk flush.
+    /// </summary>
+    public static void WriteAllBytes(string destinationPath, byte[] bytes)
+    {
+        WriteAtomic(destinationPath, stream => stream.Write(bytes, 0, bytes.Length));
+    }
+
+    /// <summary>
     /// Flushes the specified stream down to physical disk storage.
     /// </summary>
     public static void FlushToDisk(Stream stream)
