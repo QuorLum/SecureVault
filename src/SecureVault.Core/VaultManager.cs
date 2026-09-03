@@ -228,6 +228,39 @@ public sealed class VaultManager : IDisposable
     }
 
     /// <summary>
+    /// Reads the password hint stored in the unencrypted section of the vault header without unlocking (A05).
+    /// </summary>
+    public static string? GetPasswordHint(string vaultPath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(vaultPath);
+        string fullPath = Path.GetFullPath(vaultPath);
+        if (!File.Exists(fullPath)) return null;
+
+        using var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        var header = VaultHeader.ReadFrom(stream);
+        return header.PasswordHint;
+    }
+
+    /// <summary>
+    /// Password hint for the current open vault.
+    /// </summary>
+    public string? PasswordHint => _header?.PasswordHint;
+
+    /// <summary>
+    /// Sets or clears the password hint for the current vault, atomically updating header and HMAC (A05).
+    /// </summary>
+    public void SetPasswordHint(string? hint)
+    {
+        EnsureUnlocked();
+        _header.PasswordHint = hint;
+        _header.UpdateHmac(_masterKey);
+
+        _stream.Seek(0, SeekOrigin.Begin);
+        _header.WriteTo(_stream);
+        _stream.Flush(flushToDisk: true);
+    }
+
+    /// <summary>
     /// Changes the vault password without modifying file data or master key (A04).
     /// </summary>
     public void ChangePassword(string newPassword)
@@ -271,6 +304,7 @@ public sealed class VaultManager : IDisposable
         var entry = await operation.ExecuteAsync(sourceStream, fileName, virtualPath, mode, progress, cancellationToken);
 
         _index.Entries.Add(entry);
+        _header.PrimaryIndexOffset = (ulong)_stream.Position;
         SaveIndexAndFooter();
 
         return entry;
@@ -317,6 +351,9 @@ public sealed class VaultManager : IDisposable
 
     private void SaveIndexAndFooter()
     {
+        ulong indexOffset = _header.PrimaryIndexOffset > 0 ? _header.PrimaryIndexOffset : (ulong)_stream.Position;
+        _stream.Seek((long)indexOffset, SeekOrigin.Begin);
+
         // Write updated dual index
         var (pOff, pLen, bOff, bLen) = _index.WriteToVault(_stream, _encryption, _rsCodec);
         _header.PrimaryIndexOffset = pOff;
@@ -336,6 +373,7 @@ public sealed class VaultManager : IDisposable
         };
         footer.UpdateHmac(_masterKey);
         footer.WriteTo(_stream);
+        _stream.SetLength(_stream.Position);
 
         // Rewrite header with updated index pointers
         _stream.Seek(0, SeekOrigin.Begin);

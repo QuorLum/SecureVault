@@ -80,6 +80,7 @@ public partial class MainLibraryViewModel : ObservableObject
     public Action? OnLockRequested { get; set; }
     public Action<FileItemViewModel>? OnOpenFileRequested { get; set; }
     public Action? OnCreateNewNoteRequested { get; set; }
+    public Action? OnOpenFileManagerRequested { get; set; }
     public Func<Task<IReadOnlyList<string>>>? OnPickFilesToAdd { get; set; }
     public Func<Task<string?>>? OnPickFolderToAdd { get; set; }
     public Func<string, Task<string?>>? OnPickExportDestinationFile { get; set; }
@@ -253,6 +254,12 @@ public partial class MainLibraryViewModel : ObservableObject
     public void CreateNewNote()
     {
         OnCreateNewNoteRequested?.Invoke();
+    }
+
+    [RelayCommand]
+    public void OpenFileManager()
+    {
+        OnOpenFileManagerRequested?.Invoke();
     }
 
     [RelayCommand]

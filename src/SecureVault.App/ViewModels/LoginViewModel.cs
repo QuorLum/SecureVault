@@ -13,6 +13,35 @@ public partial class LoginViewModel : ObservableObject
     [ObservableProperty]
     private string _vaultPath = string.Empty;
 
+    partial void OnVaultPathChanged(string value)
+    {
+        if (!string.IsNullOrWhiteSpace(value) && File.Exists(value))
+        {
+            try
+            {
+                var hint = VaultManager.GetPasswordHint(value);
+                if (!string.IsNullOrWhiteSpace(hint))
+                {
+                    PasswordHint = hint;
+                    ShowPasswordHint = true;
+                }
+                else
+                {
+                    PasswordHint = string.Empty;
+                    ShowPasswordHint = false;
+                }
+            }
+            catch
+            {
+                ShowPasswordHint = false;
+            }
+        }
+        else
+        {
+            ShowPasswordHint = false;
+        }
+    }
+
     [ObservableProperty]
     private string _password = string.Empty;
 

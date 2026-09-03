@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LibVLCSharp.Shared;
 using SecureVault.Core;
+using SecureVault.Core.Cache;
 using SecureVault.Core.Format;
 using SecureVault.Core.Media;
 using SecureVault.Core.Organization;
@@ -10,6 +11,7 @@ namespace SecureVault.App.ViewModels;
 
 public partial class MediaPlayerViewModel : ObservableObject, IDisposable
 {
+    private static readonly PlaybackPositionCache _playbackCache = new();
     private static bool _libVlcInitialized = false;
     private readonly VaultManager _vault;
     private readonly IndexEntry _entry;
@@ -80,16 +82,29 @@ public partial class MediaPlayerViewModel : ObservableObject, IDisposable
                 var total = TimeSpan.FromMilliseconds(lengthMs);
                 TimeText = $"{cur:mm\\:ss} / {total:mm\\:ss}";
                 Position = (double)currentMs / lengthMs;
+
+                // Save playback position periodically
+                _playbackCache.SavePosition(_entry.FileGuid, Position);
             }
         };
 
-        _player.Playing += (s, e) => IsPlaying = true;
+        _player.Playing += (s, e) =>
+        {
+            IsPlaying = true;
+            // Resume from last playback position (I17)
+            double savedPos = _playbackCache.GetPosition(_entry.FileGuid);
+            if (savedPos > 0.02 && savedPos < 0.98)
+            {
+                _player.Position = (float)savedPos;
+            }
+        };
         _player.Paused += (s, e) => IsPlaying = false;
         _player.Stopped += (s, e) => IsPlaying = false;
         _player.EndReached += (s, e) =>
         {
             IsPlaying = false;
             Position = 0;
+            _playbackCache.ClearPosition(_entry.FileGuid);
         };
 
         StartPlayback();

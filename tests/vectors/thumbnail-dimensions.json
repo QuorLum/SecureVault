@@ -1,0 +1,42 @@
+[
+  {
+    "description": "Square image 1000x1000 downscaled to 200x200",
+    "inputWidth": 1000,
+    "inputHeight": 1000,
+    "maxDimension": 200,
+    "expectedWidth": 200,
+    "expectedHeight": 200
+  },
+  {
+    "description": "Landscape 16:9 1920x1080 downscaled preserving aspect ratio",
+    "inputWidth": 1920,
+    "inputHeight": 1080,
+    "maxDimension": 200,
+    "expectedWidth": 200,
+    "expectedHeight": 112
+  },
+  {
+    "description": "Portrait 9:16 1080x1920 downscaled preserving aspect ratio",
+    "inputWidth": 1080,
+    "inputHeight": 1920,
+    "maxDimension": 200,
+    "expectedWidth": 112,
+    "expectedHeight": 200
+  },
+  {
+    "description": "Ultrawide 21:9 2560x1080 downscaled preserving aspect ratio",
+    "inputWidth": 2560,
+    "inputHeight": 1080,
+    "maxDimension": 200,
+    "expectedWidth": 200,
+    "expectedHeight": 84
+  },
+  {
+    "description": "Small image 120x80 already under maxDimension",
+    "inputWidth": 120,
+    "inputHeight": 80,
+    "maxDimension": 200,
+    "expectedWidth": 120,
+    "expectedHeight": 80
+  }
+]

@@ -32,6 +32,12 @@
                     FontSize="12" 
                     CornerRadius="{StaticResource ButtonCornerRadius}" 
                     AutomationProperties.Name="Create Note" />
+
+            <Button Content="File Manager" 
+                    Command="{x:Bind ViewModel.OpenFileManagerCommand, Mode=OneWay}" 
+                    FontSize="12" 
+                    CornerRadius="{StaticResource ButtonCornerRadius}" 
+                    AutomationProperties.Name="File Manager" />
         </StackPanel>
 
         <!-- Center: Search Box -->

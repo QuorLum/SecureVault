@@ -42,6 +42,9 @@ public partial class PhotoViewerViewModel : ObservableObject
 
     public Action? OnCloseRequested { get; set; }
 
+    public VaultManager Vault => _vault;
+    public IndexEntry? CurrentEntry => (_photoEntries.Count > 0 && _currentIndex >= 0 && _currentIndex < _photoEntries.Count) ? _photoEntries[_currentIndex] : null;
+
     public PhotoViewerViewModel(VaultManager vault, List<IndexEntry> photoEntries, int initialIndex)
     {
         ArgumentNullException.ThrowIfNull(vault);

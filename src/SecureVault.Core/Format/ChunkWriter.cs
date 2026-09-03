@@ -89,4 +89,69 @@ public sealed class ChunkWriter
             RSParityLength = (ushort)rsParity.Length
         };
     }
+
+    public static ProcessedChunk ProcessChunk(
+        ReadOnlySpan<byte> plaintext,
+        uint chunkSequence,
+        Guid fileGuid,
+        ReadOnlySpan<byte> fileSalt,
+        SecureBuffer secureModeKey,
+        SecureBuffer obfuscationKey,
+        ReedSolomonCodec rsCodec,
+        ProtectionMode protectionMode)
+    {
+        uint crc32 = Crc32.HashToUInt32(plaintext);
+
+        byte[] nonce = new byte[12];
+        byte[] authTag = new byte[16];
+        byte[] payload = new byte[plaintext.Length];
+
+        if (protectionMode == ProtectionMode.SecureMode)
+        {
+            RandomNumberGenerator.Fill(nonce);
+            using var aes = new AesGcm(secureModeKey.AsReadOnlySpan(), 16);
+            aes.Encrypt(nonce, plaintext, payload, authTag);
+        }
+        else
+        {
+            plaintext.CopyTo(payload);
+            using var keystream = new ObfuscationKeystream(obfuscationKey, fileGuid, fileSalt);
+            long streamOffset = (long)chunkSequence * VaultConstants.DefaultChunkSize;
+            keystream.ApplyInPlace(payload, streamOffset);
+        }
+
+        byte[] rsParity = rsCodec.Encode(payload);
+
+        byte[] header = new byte[VaultConstants.ChunkHeaderSize];
+        Span<byte> span = header;
+        BinaryPrimitives.WriteUInt32LittleEndian(span[0x0000..0x0004], (uint)payload.Length);
+        BinaryPrimitives.WriteUInt32LittleEndian(span[0x0004..0x0008], crc32);
+        span[0x0008] = (byte)protectionMode;
+        nonce.CopyTo(span[0x0009..0x0015]);
+        authTag.CopyTo(span[0x0015..0x0025]);
+        BinaryPrimitives.WriteUInt16LittleEndian(span[0x0025..0x0027], (ushort)rsParity.Length);
+
+        byte[] fullChunk = new byte[header.Length + payload.Length + rsParity.Length];
+        header.CopyTo(fullChunk, 0);
+        payload.CopyTo(fullChunk, header.Length);
+        rsParity.CopyTo(fullChunk, header.Length + payload.Length);
+
+        return new ProcessedChunk(
+            fullChunk,
+            chunkSequence,
+            (uint)payload.Length,
+            crc32,
+            nonce,
+            authTag,
+            (ushort)rsParity.Length);
+    }
 }
+
+public record ProcessedChunk(
+    byte[] FullChunkBytes,
+    uint ChunkSequence,
+    uint ChunkDataLength,
+    uint CRC32,
+    byte[] Nonce,
+    byte[] AuthTag,
+    ushort RSParityLength);

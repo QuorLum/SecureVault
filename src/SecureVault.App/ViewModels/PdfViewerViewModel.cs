@@ -10,6 +10,7 @@ namespace SecureVault.App.ViewModels;
 
 public partial class PdfViewerViewModel : ObservableObject, IDisposable
 {
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, int> _lastPageCache = new();
     private readonly VaultManager _vault;
     private readonly IndexEntry _entry;
     private PdfRenderer? _renderer;
@@ -34,6 +35,15 @@ public partial class PdfViewerViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private WriteableBitmap? _currentPageBitmap;
 
+    [ObservableProperty]
+    private string _searchQuery = string.Empty;
+
+    [ObservableProperty]
+    private string _searchResultsText = string.Empty;
+
+    [ObservableProperty]
+    private bool _isSearchOpen;
+
     public Action? OnCloseRequested { get; set; }
 
     public PdfViewerViewModel(VaultManager vault, IndexEntry entry)
@@ -53,8 +63,17 @@ public partial class PdfViewerViewModel : ObservableObject, IDisposable
         using var stream = _vault.OpenFileStream(_entry);
         _renderer = new PdfRenderer(stream);
         TotalPages = Math.Max(1, _renderer.PageCount);
-        _currentPageIndex = 0;
-        CurrentPage = 1;
+
+        // Restore last read page from cache (L10)
+        if (_lastPageCache.TryGetValue(_entry.FileGuid, out int savedPage) && savedPage >= 1 && savedPage <= TotalPages)
+        {
+            _currentPageIndex = savedPage - 1;
+        }
+        else
+        {
+            _currentPageIndex = 0;
+        }
+        CurrentPage = _currentPageIndex + 1;
 
         RenderCurrentPage();
     }
@@ -78,10 +97,44 @@ public partial class PdfViewerViewModel : ObservableObject, IDisposable
 
             writeableBmp.Invalidate();
             CurrentPageBitmap = writeableBmp;
+
+            // Remember last opened page (L10)
+            _lastPageCache[_entry.FileGuid] = _currentPageIndex + 1;
         }
         catch
         {
             CurrentPageBitmap = null;
+        }
+    }
+
+    [RelayCommand]
+    public void ToggleSearch()
+    {
+        IsSearchOpen = !IsSearchOpen;
+        if (!IsSearchOpen)
+        {
+            SearchResultsText = string.Empty;
+        }
+    }
+
+    [RelayCommand]
+    public void ExecuteSearch()
+    {
+        if (_renderer == null || string.IsNullOrWhiteSpace(SearchQuery))
+        {
+            SearchResultsText = string.Empty;
+            return;
+        }
+
+        var hits = _renderer.SearchText(SearchQuery);
+        if (hits.Count > 0)
+        {
+            SearchResultsText = $"Found on page(s): {string.Join(", ", hits)}";
+            GoToPage(hits[0]);
+        }
+        else
+        {
+            SearchResultsText = "No matches found";
         }
     }
 

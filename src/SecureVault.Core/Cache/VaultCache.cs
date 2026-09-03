@@ -82,6 +82,26 @@ public sealed class VaultCache : IDisposable
         _cacheFilePath = Path.Combine(baseDir, $"{vaultUUID:N}.cache");
     }
 
+    private readonly Dictionary<Guid, byte[]> _inMemoryThumbnails = new();
+
+    public byte[]? GetThumbnail(Guid fileGuid)
+    {
+        lock (_inMemoryThumbnails)
+        {
+            if (_inMemoryThumbnails.TryGetValue(fileGuid, out var bytes))
+                return bytes;
+        }
+        return null;
+    }
+
+    public void PutThumbnail(Guid fileGuid, byte[] bytes)
+    {
+        lock (_inMemoryThumbnails)
+        {
+            _inMemoryThumbnails[fileGuid] = bytes;
+        }
+    }
+
     /// <summary>
     /// Atomically persists an encrypted cache snapshot to disk (E01, E02).
     /// </summary>

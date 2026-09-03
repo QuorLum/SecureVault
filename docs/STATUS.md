@@ -14,11 +14,11 @@
 | A02 | Unlock vault with password | ✅ | 1 |
 | A03 | Lock vault (zero keys) | ✅ | 1 |
 | A04 | Change password | ✅ | 1 |
-| A05 | Password hint | 📋 | 4 |
+| A05 | Password hint | ✅ | 4 |
 | A06 | Recovery key generation (24-word) | ✅ | 1 |
-| A07 | Recovery key unlock | 📋 | 4 |
-| A08 | Auto-lock on idle | 📋 | 4 |
-| A09 | Failed attempt delay | 📋 | 4 |
+| A07 | Recovery key unlock | ✅ | 4 |
+| A08 | Auto-lock on idle | ✅ | 4 |
+| A09 | Failed attempt delay | ✅ | 4 |
 | A10 | Vault format version in header | ✅ | 1 |
 | A11 | Vault UUID | ✅ | 1 |
 | A12 | Master key architecture | ✅ | 1 |
@@ -26,8 +26,8 @@
 | A14 | AES-256-GCM for index encryption | ✅ | 1 |
 | A15 | Fast Obfuscation Mode (XOR) | ✅ | 1 |
 | A16 | AES-256-GCM per-file (Secure Mode) | ✅ | 1 |
-| A17 | "Encrypt Everything" button | 📋 | 4 |
-| A18 | Toggle protection mode per file | 📋 | 4 |
+| A17 | "Encrypt Everything" button | ✅ | 4 |
+| A18 | Toggle protection mode per file | ✅ | 4 |
 | A19 | Dual key-wrap (password + recovery) | ✅ | 1 |
 | A20 | Single-writer file lock | ✅ | 1 |
 | A21 | Key zeroing (pinned buffers) | ✅ | 1 |
@@ -131,19 +131,19 @@
 | E05 | Incremental cache update | ✅ | 2 |
 | E06 | Progressive loading | ✅ | 2 |
 | E07 | Virtualized UI lists | ✅ | 2 |
-| E08 | Background thumbnail generation | 📋 | 4 |
-| E09 | Thumbnail format: WebP 200x200 | 📋 | 4 |
-| E10 | Image thumbnails | 📋 | 4 |
-| E11 | Video thumbnails | 📋 | 4 |
-| E12 | Audio thumbnails (album art) | 📋 | 4 |
-| E13 | PDF thumbnails (first page) | 📋 | 4 |
-| E14 | Parallel thumbnail generation | 📋 | 4 |
-| E15 | LRU chunk cache | 📋 | 4 |
-| E16 | Pre-render adjacent images | 📋 | 4 |
-| E17 | Cache playback positions | 📋 | 4 |
-| E18 | Cache UI state | 📋 | 4 |
-| E19 | Streaming decryption | 📋 | 4 |
-| E20 | Parallel chunk processing | 📋 | 4 |
+| E08 | Background thumbnail generation | ✅ | 4 |
+| E09 | Thumbnail format: WebP 200x200 | ✅ | 4 |
+| E10 | Image thumbnails | ✅ | 4 |
+| E11 | Video thumbnails | ✅ | 4 |
+| E12 | Audio thumbnails (album art) | ✅ | 4 |
+| E13 | PDF thumbnails (first page) | ✅ | 4 |
+| E14 | Parallel thumbnail generation | ✅ | 4 |
+| E15 | LRU chunk cache | ✅ | 4 |
+| E16 | Pre-render adjacent images | ✅ | 4 |
+| E17 | Cache playback positions | ✅ | 4 |
+| E18 | Cache UI state | ✅ | 4 |
+| E19 | Streaming decryption | ✅ | 4 |
+| E20 | Parallel chunk processing | ✅ | 4 |
 
 ## CATEGORY F: INTEGRITY AND RESILIENCE
 
@@ -197,16 +197,16 @@
 | H04 | Zoom | ✅ | 3 |
 | H05 | EXIF data display | ✅ | 3 |
 | H06 | Rotate | ✅ | 3 |
-| H07 | Crop | 📋 | 4 |
-| H08 | Flip | 📋 | 4 |
-| H09 | Save edits to vault | 📋 | 4 |
+| H07 | Crop | ✅ | 4 |
+| H08 | Flip | ✅ | 4 |
+| H09 | Save edits to vault | ✅ | 4 |
 | H10 | Slideshow | 📋 | 4 |
 | H11 | Albums | 📋 | 4 |
 | H12 | Timeline view | 📋 | 4 |
 | H13 | Favorites filter | 📋 | 4 |
 | H14 | All image formats | 📋 | 4 |
 | H15 | Decode in memory | ✅ | 3 |
-| H16 | Pre-load adjacent | 📋 | 4 |
+| H16 | Pre-load adjacent | ✅ | 4 |
 | H17 | SkiaSharp GPU rendering | 📋 | 4 |
 | H18 | Large image handling | 📋 | 4 |
 
@@ -228,13 +228,13 @@
 | I12 | Audio track selection | 📋 | 4 |
 | I13 | Chapter navigation | 📋 | 4 |
 | I14 | Screenshot during playback | 📋 | 4 |
-| I15 | Loop/repeat modes | 📋 | 4 |
+| I15 | Loop/repeat modes | ✅ | 4 |
 | I16 | Keyboard shortcuts | 📋 | 4 |
-| I17 | Resume playback | 📋 | 4 |
-| I18 | Playlists | 📋 | 4 |
-| I19 | Play next/previous | 📋 | 4 |
+| I17 | Resume playback | ✅ | 4 |
+| I18 | Playlists | ✅ | 4 |
+| I19 | Play next/previous | ✅ | 4 |
 | I20 | Mini player for audio | 📋 | 4 |
-| I21 | Album art display | 📋 | 4 |
+| I21 | Album art display | ✅ | 4 |
 | I22 | Background audio | 📋 | 4 |
 | I23 | Hardware accelerated video | 📋 | 4 |
 | I24 | All media formats | 📋 | 4 |
@@ -252,36 +252,36 @@
 | J06 | Code snippets | ✅ | 3 |
 | J07 | Notebooks/sections | ✅ | 3 |
 | J08 | Auto-save | ✅ | 3 |
-| J09 | Version history | 📋 | 4 |
-| J10 | Restore version | 📋 | 4 |
+| J09 | Version history | ✅ | 4 |
+| J10 | Restore version | ✅ | 4 |
 | J11 | Full-text search | 📋 | 4 |
-| J12 | Word count | 📋 | 4 |
+| J12 | Word count | ✅ | 4 |
 | J13 | Attach vault files | 📋 | 4 |
 | J14 | Embed images | 📋 | 4 |
 | J15 | Export as PDF | 📋 | 4 |
 | J16 | Export as TXT/MD | 📋 | 4 |
 | J17 | Pin notes | 📋 | 4 |
-| J18 | Tags on notes | 📋 | 4 |
-| J19 | Note timestamps | 📋 | 4 |
+| J18 | Tags on notes | ✅ | 4 |
+| J19 | Note timestamps | ✅ | 4 |
 | J20 | Mixed content | 📋 | 4 |
 
 ## CATEGORY K: FILE MANAGER
 
 | ID | Feature | Status | Phase |
 |----|---------|--------|-------|
-| K01 | Virtual folder tree | 📋 | 4 |
-| K02 | File list with details | 📋 | 4 |
-| K03 | Bulk selection | 📋 | 4 |
+| K01 | Virtual folder tree | ✅ | 4 |
+| K02 | File list with details | ✅ | 4 |
+| K03 | Bulk selection | ✅ | 4 |
 | K04 | Cut/copy/paste | 📋 | 4 |
 | K05 | Drag-drop between folders | 📋 | 4 |
 | K06 | Context menu | 📋 | 4 |
-| K07 | Folder size calculation | 📋 | 4 |
-| K08 | Duplicate file finder | 📋 | 4 |
-| K09 | Browse archives | 📋 | 4 |
-| K10 | Extract single from archive | 📋 | 4 |
-| K11 | Extract all from archive | 📋 | 4 |
-| K12 | File type statistics | 📋 | 4 |
-| K13 | SharpCompress library | 📋 | 4 |
+| K07 | Folder size calculation | ✅ | 4 |
+| K08 | Duplicate file finder | ✅ | 4 |
+| K09 | Browse archives | ✅ | 4 |
+| K10 | Extract single from archive | ✅ | 4 |
+| K11 | Extract all from archive | ✅ | 4 |
+| K12 | File type statistics | ✅ | 4 |
+| K13 | SharpCompress library | ✅ | 4 |
 
 ## CATEGORY L: PDF VIEWER
 
@@ -293,11 +293,11 @@
 | L04 | Fit to width/page | ✅ | 3 |
 | L05 | Page navigation | ✅ | 3 |
 | L06 | Scroll through pages | ✅ | 3 |
-| L07 | Text search in PDF | 📋 | 4 |
+| L07 | Text search in PDF | ✅ | 4 |
 | L08 | Bookmarks panel | 📋 | 4 |
-| L09 | Copy text selection | 📋 | 4 |
-| L10 | Remember last page | 📋 | 4 |
-| L11 | Pre-render adjacent pages | 📋 | 4 |
+| L09 | Copy text selection | ✅ | 4 |
+| L10 | Remember last page | ✅ | 4 |
+| L11 | Pre-render adjacent pages | ✅ | 4 |
 
 ## CATEGORY M: SECURITY
 
@@ -310,8 +310,8 @@
 | M05 | Obfuscation key zeroed on lock | ✅ | 1 |
 | M06 | No decrypted data to disk | ✅ | 1 |
 | M07 | Secure temp file deletion | 📋 | 6 |
-| M08 | Auto-lock on system lock | 📋 | 4 |
-| M09 | Auto-lock on idle | 📋 | 4 |
+| M08 | Auto-lock on system lock | ✅ | 4 |
+| M09 | Auto-lock on idle | ✅ | 4 |
 | M10 | Auto-lock on minimize | 📋 | 6 |
 | M11 | Brute force delay | ✅ | 2 |
 | M12 | Proprietary format | ✅ | 1 |

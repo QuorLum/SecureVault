@@ -67,6 +67,10 @@
                     <ToggleButton IsChecked="{x:Bind ViewModel.IsExifPanelOpen, Mode=TwoWay}" ToolTipService.ToolTip="Toggle EXIF Metadata" Background="Transparent" BorderThickness="0">
                         <FontIcon Glyph="&#xE946;" FontSize="13" />
                     </ToggleButton>
+                    <AppBarSeparator />
+                    <Button Click="OnEditClicked" ToolTipService.ToolTip="Edit Photo (Crop, Flip)" Background="Transparent" BorderThickness="0">
+                        <FontIcon Glyph="&#xE70F;" FontSize="13" />
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>

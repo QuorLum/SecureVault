@@ -48,7 +48,7 @@
                     </Button>
                 </StackPanel>
 
-                <!-- Right: Zoom Controls -->
+                <!-- Right: Zoom & Search Controls -->
                 <StackPanel Orientation="Horizontal" Spacing="6" Grid.Column="2">
                     <Button Command="{x:Bind ViewModel.ZoomOutCommand, Mode=OneWay}" ToolTipService.ToolTip="Zoom Out" Background="Transparent" BorderThickness="0">
                         <FontIcon Glyph="&#xE71F;" FontSize="13" />
@@ -59,8 +59,27 @@
                     <Button Command="{x:Bind ViewModel.ZoomInCommand, Mode=OneWay}" ToolTipService.ToolTip="Zoom In" Background="Transparent" BorderThickness="0">
                         <FontIcon Glyph="&#xE71E;" FontSize="13" />
                     </Button>
+                    <AppBarSeparator />
+                    <ToggleButton IsChecked="{x:Bind ViewModel.IsSearchOpen, Mode=TwoWay}" ToolTipService.ToolTip="Find Text in PDF" Background="Transparent" BorderThickness="0">
+                        <FontIcon Glyph="&#xE721;" FontSize="13" />
+                    </ToggleButton>
                 </StackPanel>
             </Grid>
+        </Border>
+
+        <!-- Search Bar Drawer -->
+        <Border Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,8,16,0" Width="360" Background="#18181B" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12" Visibility="{x:Bind ViewModel.IsSearchOpen, Mode=OneWay, Converter={StaticResource BoolToVisibleConverter}}" Canvas.ZIndex="10">
+            <StackPanel Spacing="8">
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Find in document..." FontSize="12" />
+                    <Button Grid.Column="1" Content="Find" Command="{x:Bind ViewModel.ExecuteSearchCommand, Mode=OneWay}" Style="{StaticResource AccentButtonStyle}" Padding="12,5" FontSize="11" />
+                </Grid>
+                <TextBlock Text="{x:Bind ViewModel.SearchResultsText, Mode=OneWay}" FontSize="11" Foreground="{StaticResource AppAccentBrush}" />
+            </StackPanel>
         </Border>
 
         <!-- Document Canvas Area -->

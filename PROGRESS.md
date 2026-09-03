@@ -101,10 +101,53 @@
 
 ---
 
-## Current State: Phase 3 Complete (All 85 Tests Passing, Solution Builds with 0 Errors)
-- **Current Milestone:** Phase 3: Integrated Apps — **COMPLETE**
-- **Next Milestone:** Phase 4: Enhanced Experience (Thumbnails, Full-Text Search, Recent Files, Extended Formats)
-- **Branch:** `phase-3/integrated-apps`
+### Phase 4: Advanced Features (Thumbnails, Auto-Lock, Editing, Parallel Pipeline, File Manager & Archives)
+- [x] **A05 Password Hint System:**
+  - Implemented unencrypted header field (offset `0x00FC`, up to 255 UTF-8 bytes) readable without unlocking.
+  - Added `VaultManager.GetPasswordHint(path)` and `SetPasswordHint(hint)` with atomic header HMAC recalculation.
+  - Display hint on login screen upon vault selection with security warning.
+- [x] **A08 & M08 Auto-Lock & Workstation Lock Detection:**
+  - `IdleLockService`: Win32 `GetLastInputInfo` idle timer auto-locking vault after configurable timeout (5 minutes default).
+  - `SystemLockDetector`: Hooks `SystemEvents.SessionSwitch` for instant lock upon `SessionLock` (Win+L) or `SessionLogoff`.
+- [x] **A17 & A18 Protection Mode Operations:**
+  - `ProtectionModeOperation`: Per-file conversion between Fast Obfuscation and AES-256-GCM Secure Mode with verified SHA-256 integrity assertion.
+  - "Encrypt Everything": Batch converts all Fast Obfuscation files to Secure Mode.
+- [x] **E08–E14 Thumbnail Generation System:**
+  - `ThumbnailGenerator`: Produces WebP thumbnails (<= 200x200 max) in memory for images, audio album art (ID3 via `TagLibSharp`), and PDF first page (via `PdfRenderer`).
+  - `ThumbnailService`: Multi-core background generation using `SemaphoreSlim(ProcessorCount)` and local encrypted `VaultCache` storage.
+- [x] **E15–E20 Performance & Caching Engine:**
+  - `ChunkLruCache`: 16-chunk (16MB max) thread-safe LRU cache with eviction for smooth random seeking.
+  - `ImagePrefetcher`: Asynchronously pre-decodes adjacent images (`currentIndex ± 1`) into memory.
+  - `PlaybackPositionCache`: Remembers last playback position per media file to resume playback seamlessly (I17).
+  - `ParallelChunkPipeline`: Producer-consumer pipeline using `Channel<T>` to parallelize chunk cryptography across cores while strictly enforcing sequential chunk write order.
+- [x] **H07–H09 Image Editor:**
+  - `ImageEditorViewModel` & `ImageEditorOverlay.xaml`: Interactive center crop, horizontal flip, vertical flip, and zero-disk-write commit back into vault.
+- [x] **K01–K13 File Manager & In-Memory Archives:**
+  - `FileManagerViewModel` & `FileManagerPage.xaml`: Tree + details file manager, recursive folder size calculation, duplicate file finder grouped by SHA-256, and storage statistics breakdown.
+  - `ArchiveReader`: In-memory multi-format archive inspection and extraction powered by `SharpCompress` (ZIP, 7Z, TAR, RAR) directly into vault storage without touching physical disk.
+- [x] **L07–L10 Advanced PDF:**
+  - Full-text search across all PDF pages in memory with page number hits.
+  - Automatic memory of last opened page via static cache.
+- [x] **J09–J10 Notes Version History:**
+  - `NoteVersionHistory`: Rolling 10-version snapshot retention with FIFO eviction and 1-click snapshot restore.
+- [x] **Test Suite Verification:**
+  - Added `tests/vectors/thumbnail-dimensions.json`.
+  - Added `ThumbnailGeneratorTests.cs` (WebP headers, dimension preservation).
+  - Added `ChunkLruCacheTests.cs` (capacity, LRU eviction, hits/misses).
+  - Added `ArchiveReaderTests.cs` (in-memory ZIP listing and extraction).
+  - Added `NoteVersionHistoryTests.cs` (FIFO 10-snapshot retention and version restore).
+  - Added `PasswordHintTests.cs` (unencrypted header hint read and HMAC update).
+  - Added `ProtectionModeOperationTests.cs` (mode toggling, SHA-256 integrity, EncryptAll).
+  - Added `ParallelChunkPipelineTests.cs` (parallel multi-chunk write sequencing).
+  - **Test Results:** 99 / 99 Passed (100% success rate).
+  - `src/SecureVault.sln` builds with **0 errors and 0 warnings** on x64.
+
+---
+
+## Current State: Phase 4 Complete (All 99 Tests Passing, Solution Builds with 0 Errors)
+- **Current Milestone:** Phase 4: Advanced Features — **COMPLETE**
+- **Next Milestone:** Phase 5: Hardening & Production Release
+- **Branch:** `phase-4/advanced-features`
 - **Environment:** Isolated .NET 8 SDK (8.0.424) in `$env:USERPROFILE\.dotnet`
 - **Activation:** Run `. .\activate.ps1` in PowerShell to set `DOTNET_ROOT` and `PATH`
 

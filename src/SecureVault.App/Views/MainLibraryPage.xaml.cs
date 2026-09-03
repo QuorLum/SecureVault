@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using SecureVault.App.Services;
 using SecureVault.App.ViewModels;
 using SecureVault.Core;
 using SecureVault.Core.Format;
@@ -11,6 +12,8 @@ namespace SecureVault.App.Views;
 public sealed partial class MainLibraryPage : Page
 {
     public MainLibraryViewModel? ViewModel { get; private set; }
+    private IdleLockService? _idleLockService;
+    private SystemLockDetector? _systemLockDetector;
 
     public MainLibraryPage()
     {
@@ -61,12 +64,48 @@ public sealed partial class MainLibraryPage : Page
                 Frame.Navigate(typeof(NotesEditorPage), (vault, (IndexEntry?)null));
             };
 
+            ViewModel.OnOpenFileManagerRequested = () =>
+            {
+                Frame.Navigate(typeof(FileManagerPage), vault);
+            };
+
             ViewModel.OnPickFilesToAdd = PickFilesToAddAsync;
             ViewModel.OnPickFolderToAdd = PickFolderToAddAsync;
             ViewModel.OnPickExportDestinationFile = PickExportDestinationFileAsync;
             ViewModel.OnPromptRename = PromptRenameAsync;
             ViewModel.OnConfirmAction = ConfirmActionAsync;
+
+            // Auto-lock on 5 minutes idle or Windows workstation lock (A08, M08)
+            _idleLockService?.Dispose();
+            _idleLockService = new IdleLockService(TimeSpan.FromMinutes(5), () =>
+            {
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    vault.Lock();
+                    Frame.Navigate(typeof(LoginPage));
+                });
+            });
+            _idleLockService.Start();
+
+            _systemLockDetector?.Dispose();
+            _systemLockDetector = new SystemLockDetector(() =>
+            {
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    vault.Lock();
+                    Frame.Navigate(typeof(LoginPage));
+                });
+            });
         }
+    }
+
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
+    {
+        base.OnNavigatedFrom(e);
+        _idleLockService?.Dispose();
+        _idleLockService = null;
+        _systemLockDetector?.Dispose();
+        _systemLockDetector = null;
     }
 
     private async Task<IReadOnlyList<string>> PickFilesToAddAsync()

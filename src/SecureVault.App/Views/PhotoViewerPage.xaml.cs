@@ -59,4 +59,12 @@ public sealed partial class PhotoViewerPage : Page
                 break;
         }
     }
+
+    private void OnEditClicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (ViewModel?.CurrentEntry != null)
+        {
+            Frame.Navigate(typeof(ImageEditorOverlay), (ViewModel.Vault, ViewModel.CurrentEntry));
+        }
+    }
 }

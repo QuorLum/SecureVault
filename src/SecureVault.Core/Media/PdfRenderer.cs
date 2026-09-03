@@ -59,6 +59,37 @@ public sealed class PdfRenderer : IDisposable
         return (rawBgra, origWidth, origHeight);
     }
 
+    /// <summary>
+    /// Extracts plain text from a page in memory (L09).
+    /// </summary>
+    public string GetPageText(int pageIndex)
+    {
+        EnsureNotDisposed();
+        if (pageIndex < 0 || pageIndex >= PageCount) return string.Empty;
+        using var pageReader = _docReader.GetPageReader(pageIndex);
+        return pageReader.GetText() ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Searches document text across pages in memory and returns 1-based page numbers with hits (L07).
+    /// </summary>
+    public IReadOnlyList<int> SearchText(string query)
+    {
+        EnsureNotDisposed();
+        if (string.IsNullOrWhiteSpace(query)) return Array.Empty<int>();
+
+        var hits = new List<int>();
+        for (int i = 0; i < PageCount; i++)
+        {
+            string text = GetPageText(i);
+            if (text.Contains(query, StringComparison.OrdinalIgnoreCase))
+            {
+                hits.Add(i + 1);
+            }
+        }
+        return hits;
+    }
+
     private void EnsureNotDisposed()
     {
         if (_disposed)

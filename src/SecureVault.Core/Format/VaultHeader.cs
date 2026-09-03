@@ -25,6 +25,32 @@ public sealed class VaultHeader
     public byte PasswordHintLength { get; set; }
     public byte[] PasswordHintBytes { get; set; } = new byte[255];
 
+    public string? PasswordHint
+    {
+        get
+        {
+            if (PasswordHintLength == 0) return null;
+            return Encoding.UTF8.GetString(PasswordHintBytes, 0, PasswordHintLength);
+        }
+        set
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                PasswordHintLength = 0;
+                Array.Clear(PasswordHintBytes, 0, PasswordHintBytes.Length);
+            }
+            else
+            {
+                byte[] utf8 = Encoding.UTF8.GetBytes(value);
+                if (utf8.Length > 255)
+                    throw new ArgumentException("Password hint exceeds maximum length of 255 UTF-8 bytes.");
+                PasswordHintLength = (byte)utf8.Length;
+                Array.Clear(PasswordHintBytes, 0, PasswordHintBytes.Length);
+                utf8.CopyTo(PasswordHintBytes, 0);
+            }
+        }
+    }
+
     public ulong PrimaryIndexOffset { get; set; }
     public ulong PrimaryIndexLength { get; set; }
     public ulong BackupIndexOffset { get; set; }
