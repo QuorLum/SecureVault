@@ -12,6 +12,11 @@
     <PackageReference Include="MessagePack" Version="3.1.8" />
     <PackageReference Include="STH1123.ReedSolomon" Version="2.1.0" />
     <PackageReference Include="System.IO.Hashing" Version="8.0.0" />
+    <PackageReference Include="SkiaSharp" Version="2.88.9" />
+    <PackageReference Include="MetadataExtractor" Version="2.9.3" />
+    <PackageReference Include="Docnet.Core" Version="2.6.0" />
+    <PackageReference Include="LibVLCSharp" Version="3.10.1" />
+    <PackageReference Include="Markdig" Version="0.44.0" />
   </ItemGroup>
 
   <ItemGroup>

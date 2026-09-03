@@ -76,8 +76,35 @@
 
 ---
 
-## Next Milestone: Phase 3 — Media Viewers & Player
-1. Photo Viewer (H01–H08): WebP/JPEG/PNG/GIF/BMP/TIFF/RAW rendering directly from `VaultFileStream` with zoom, pan, EXIF, slideshow.
-2. Video & Audio Player (I01–I09): LibVLCSharp integration directly streaming from `VaultFileStream` without writing to disk.
-3. PDF Viewer (L01–L06): PDFium rendering directly from decrypted stream with page navigation, zoom, and fit options.
-4. Secure Notes Editor (J01–J08): Markdown/rich text notes editor with auto-save, code snippets, and checklists.
+### Phase 3: Integrated Apps (Media Viewers & Player, Notes Editor)
+- [x] **Zero Disk-Write Invariant (H15, I04, L01):** Decrypts and renders images, videos, audio, PDFs, and notes strictly in memory; zero unencrypted bytes or temporary files touch the physical disk.
+- [x] **Core Media & Documents Engine (`SecureVault.Core.Media` & `Notes`):**
+  - `ImageDecoder.cs`: SkiaSharp-based in-memory decoder, aspect-ratio downsampler (`DecodeAtResolution`), and 90° CW/CCW in-memory rotation (`Rotate`).
+  - `ExifMetadataReader.cs`: In-memory EXIF extraction (Camera Make/Model, Date Taken, Aperture, Shutter Speed, ISO, Focal Length, GPS coordinates).
+  - `PdfRenderer.cs`: Docnet.Core (PDFium) in-memory rendering engine producing 32-bit BGRA page pixel buffers at custom scale/DPI.
+  - `VaultMediaInput.cs`: LibVLCSharp `MediaInput` subclass bridging `VaultFileStream` directly into LibVLC with seeking and streaming across 1MB chunk boundaries.
+  - `NoteDocument.cs`: Model supporting PlainText, Markdown, and RichText; UTF-8 JSON serialization; real-time word counting; Markdig Markdown rendering.
+- [x] **WinUI 3 Integrated Viewers & Editors (`SecureVault.App`):**
+  - `PhotoViewerPage.xaml` & `PhotoViewerViewModel.cs`: Dark obsidian HUD, smooth zoom/pan canvas, 90° CW/CCW rotation, full EXIF flyout drawer, keyboard shortcuts (Left/Right arrow, R, +/-, Esc).
+  - `MediaPlayerPage.xaml` & `MediaPlayerViewModel.cs`: Direct-streaming LibVLC `VideoView`, seek scrubber, volume control, mute toggle, playback rate selector (0.5x to 2.0x), glowing audio waveform visualizer, full-screen presenter toggle.
+  - `PdfViewerPage.xaml` & `PdfViewerViewModel.cs`: In-memory PDF viewing canvas, page navigation controls, page indicator, zoom in/out/reset, keyboard page flip (PageUp/PageDown, Left/Right).
+  - `NotesEditorPage.xaml` & `NotesEditorViewModel.cs`: Split-screen Markdown editor with live preview pane, non-blocking 3-second debounced auto-save timer (`DispatcherQueueTimer`), live word and character counters, manual save (Ctrl+S).
+  - Routed double-click and context menu "Open" from `VirtualizedFileGrid` to the dedicated viewer based on `FileCategory`.
+  - Added `+ Note` quick creation button to `ToolbarControl.xaml`.
+- [x] **Test Suite Verification:**
+  - Added `ImageDecoderTests.cs` (decoding, aspect ratio preservation, 90°/180°/-90° rotation, EXIF safety).
+  - Added `NoteDocumentTests.cs` (word count accuracy across whitespaces/newlines, roundtrip JSON serialization, Markdown HTML rendering).
+  - Added `VaultMediaInputTests.cs` (Open, Read, Seek, Close across offsets with unmanaged memory buffer).
+  - Added `PdfRendererTests.cs` (PageCount, BGRA buffer rendering, bounds checking).
+  - **Test Results:** 85 / 85 Passed (100% success rate).
+  - `src/SecureVault.sln` builds with **0 errors and 0 warnings** under x64.
+
+---
+
+## Current State: Phase 3 Complete (All 85 Tests Passing, Solution Builds with 0 Errors)
+- **Current Milestone:** Phase 3: Integrated Apps — **COMPLETE**
+- **Next Milestone:** Phase 4: Enhanced Experience (Thumbnails, Full-Text Search, Recent Files, Extended Formats)
+- **Branch:** `phase-3/integrated-apps`
+- **Environment:** Isolated .NET 8 SDK (8.0.424) in `$env:USERPROFILE\.dotnet`
+- **Activation:** Run `. .\activate.ps1` in PowerShell to set `DOTNET_ROOT` and `PATH`
+

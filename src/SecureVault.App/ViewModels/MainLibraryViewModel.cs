@@ -78,6 +78,8 @@ public partial class MainLibraryViewModel : ObservableObject
     public ObservableCollection<string> AllTags { get; } = new();
 
     public Action? OnLockRequested { get; set; }
+    public Action<FileItemViewModel>? OnOpenFileRequested { get; set; }
+    public Action? OnCreateNewNoteRequested { get; set; }
     public Func<Task<IReadOnlyList<string>>>? OnPickFilesToAdd { get; set; }
     public Func<Task<string?>>? OnPickFolderToAdd { get; set; }
     public Func<string, Task<string?>>? OnPickExportDestinationFile { get; set; }
@@ -236,6 +238,21 @@ public partial class MainLibraryViewModel : ObservableObject
             }
             RefreshData();
         }
+    }
+
+    [RelayCommand]
+    public void OpenFile(FileItemViewModel? item)
+    {
+        if (item != null)
+        {
+            OnOpenFileRequested?.Invoke(item);
+        }
+    }
+
+    [RelayCommand]
+    public void CreateNewNote()
+    {
+        OnCreateNewNoteRequested?.Invoke();
     }
 
     [RelayCommand]

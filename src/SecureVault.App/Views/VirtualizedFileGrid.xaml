@@ -27,6 +27,7 @@
                             AutomationProperties.Name="{x:Bind FileName}">
                         <Border.ContextFlyout>
                             <MenuFlyout>
+                                <MenuFlyoutItem Text="Open" Icon="OpenWith" Click="OnOpenClicked" FontWeight="SemiBold" />
                                 <MenuFlyoutItem Text="Export to Disk" Icon="Download" Click="OnExportClicked" />
                                 <MenuFlyoutItem Text="Make a Copy" Icon="Copy" Click="OnCopyClicked" />
                                 <MenuFlyoutItem Text="Rename" Icon="Rename" Click="OnRenameClicked" />

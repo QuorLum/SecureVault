@@ -26,6 +26,12 @@
                     FontSize="12" 
                     CornerRadius="{StaticResource ButtonCornerRadius}" 
                     AutomationProperties.Name="Add Folder" />
+
+            <Button Content="+ Note" 
+                    Command="{x:Bind ViewModel.CreateNewNoteCommand, Mode=OneWay}" 
+                    FontSize="12" 
+                    CornerRadius="{StaticResource ButtonCornerRadius}" 
+                    AutomationProperties.Name="Create Note" />
         </StackPanel>
 
         <!-- Center: Search Box -->

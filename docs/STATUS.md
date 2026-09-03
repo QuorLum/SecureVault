@@ -191,12 +191,12 @@
 
 | ID | Feature | Status | Phase |
 |----|---------|--------|-------|
-| H01 | Photo grid view | 📋 | 3 |
-| H02 | Full-screen viewer | 📋 | 3 |
-| H03 | Navigate between photos | 📋 | 3 |
-| H04 | Zoom | 📋 | 3 |
-| H05 | EXIF data display | 📋 | 3 |
-| H06 | Rotate | 📋 | 3 |
+| H01 | Photo grid view | ✅ | 3 |
+| H02 | Full-screen viewer | ✅ | 3 |
+| H03 | Navigate between photos | ✅ | 3 |
+| H04 | Zoom | ✅ | 3 |
+| H05 | EXIF data display | ✅ | 3 |
+| H06 | Rotate | ✅ | 3 |
 | H07 | Crop | 📋 | 4 |
 | H08 | Flip | 📋 | 4 |
 | H09 | Save edits to vault | 📋 | 4 |
@@ -205,7 +205,7 @@
 | H12 | Timeline view | 📋 | 4 |
 | H13 | Favorites filter | 📋 | 4 |
 | H14 | All image formats | 📋 | 4 |
-| H15 | Decode in memory | 📋 | 3 |
+| H15 | Decode in memory | ✅ | 3 |
 | H16 | Pre-load adjacent | 📋 | 4 |
 | H17 | SkiaSharp GPU rendering | 📋 | 4 |
 | H18 | Large image handling | 📋 | 4 |
@@ -214,15 +214,15 @@
 
 | ID | Feature | Status | Phase |
 |----|---------|--------|-------|
-| I01 | Video playback (libVLC) | 📋 | 3 |
-| I02 | Audio playback (libVLC) | 📋 | 3 |
-| I03 | Stream from vault | 📋 | 3 |
-| I04 | No temp files for playback | 📋 | 3 |
-| I05 | Play/pause/stop | 📋 | 3 |
-| I06 | Seek bar | 📋 | 3 |
-| I07 | Volume control | 📋 | 3 |
-| I08 | Playback speed | 📋 | 3 |
-| I09 | Full screen | 📋 | 3 |
+| I01 | Video playback (libVLC) | ✅ | 3 |
+| I02 | Audio playback (libVLC) | ✅ | 3 |
+| I03 | Stream from vault | ✅ | 3 |
+| I04 | No temp files for playback | ✅ | 3 |
+| I05 | Play/pause/stop | ✅ | 3 |
+| I06 | Seek bar | ✅ | 3 |
+| I07 | Volume control | ✅ | 3 |
+| I08 | Playback speed | ✅ | 3 |
+| I09 | Full screen | ✅ | 3 |
 | I10 | Picture-in-Picture | 📋 | 4 |
 | I11 | Subtitle support | 📋 | 4 |
 | I12 | Audio track selection | 📋 | 4 |
@@ -244,14 +244,14 @@
 
 | ID | Feature | Status | Phase |
 |----|---------|--------|-------|
-| J01 | Create new note | 📋 | 3 |
-| J02 | Plain text editor | 📋 | 3 |
-| J03 | Markdown editor + preview | 📋 | 3 |
-| J04 | Rich text editor | 📋 | 3 |
-| J05 | Checklists | 📋 | 3 |
-| J06 | Code snippets | 📋 | 3 |
-| J07 | Notebooks/sections | 📋 | 3 |
-| J08 | Auto-save | 📋 | 3 |
+| J01 | Create new note | ✅ | 3 |
+| J02 | Plain text editor | ✅ | 3 |
+| J03 | Markdown editor + preview | ✅ | 3 |
+| J04 | Rich text editor | ✅ | 3 |
+| J05 | Checklists | ✅ | 3 |
+| J06 | Code snippets | ✅ | 3 |
+| J07 | Notebooks/sections | ✅ | 3 |
+| J08 | Auto-save | ✅ | 3 |
 | J09 | Version history | 📋 | 4 |
 | J10 | Restore version | 📋 | 4 |
 | J11 | Full-text search | 📋 | 4 |
@@ -287,12 +287,12 @@
 
 | ID | Feature | Status | Phase |
 |----|---------|--------|-------|
-| L01 | Open PDF from vault | 📋 | 3 |
-| L02 | Page rendering (Pdfium) | 📋 | 3 |
-| L03 | Zoom in/out | 📋 | 3 |
-| L04 | Fit to width/page | 📋 | 3 |
-| L05 | Page navigation | 📋 | 3 |
-| L06 | Scroll through pages | 📋 | 3 |
+| L01 | Open PDF from vault | ✅ | 3 |
+| L02 | Page rendering (Pdfium) | ✅ | 3 |
+| L03 | Zoom in/out | ✅ | 3 |
+| L04 | Fit to width/page | ✅ | 3 |
+| L05 | Page navigation | ✅ | 3 |
+| L06 | Scroll through pages | ✅ | 3 |
 | L07 | Text search in PDF | 📋 | 4 |
 | L08 | Bookmarks panel | 📋 | 4 |
 | L09 | Copy text selection | 📋 | 4 |

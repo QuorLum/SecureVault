@@ -43,7 +43,22 @@ public sealed partial class VirtualizedFileGrid : UserControl
             }
             else
             {
-                ViewModel?.ExportFileCommand.Execute(item);
+                ViewModel?.OpenFile(item);
+            }
+        }
+    }
+
+    private void OnOpenClicked(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        {
+            if (item.IsFolder)
+            {
+                ViewModel?.NavigateToFolder(item.FileGuid);
+            }
+            else
+            {
+                ViewModel?.OpenFile(item);
             }
         }
     }

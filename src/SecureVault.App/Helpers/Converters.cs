@@ -30,3 +30,14 @@ public sealed class BoolToOpacityConverter : IValueConverter
 
     public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotImplementedException();
 }
+
+public sealed class BoolToPlayPauseGlyphConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        bool isPlaying = value is bool b && b;
+        return isPlaying ? "\uE769" : "\uE768"; // Pause vs Play glyph
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotImplementedException();
+}

@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using SecureVault.App.ViewModels;
 using SecureVault.Core;
+using SecureVault.Core.Format;
 using Windows.Storage.Pickers;
 
 namespace SecureVault.App.Views;
@@ -28,6 +29,36 @@ public sealed partial class MainLibraryPage : Page
             ViewModel.OnLockRequested = () =>
             {
                 Frame.Navigate(typeof(LoginPage));
+            };
+
+            ViewModel.OnOpenFileRequested = item =>
+            {
+                if (item.Category == Core.Organization.FileCategory.Photos)
+                {
+                    var photos = ViewModel.Files
+                        .Where(f => f.Category == Core.Organization.FileCategory.Photos)
+                        .Select(f => f.Entry)
+                        .ToList();
+                    int idx = photos.FindIndex(p => p.FileGuid == item.FileGuid);
+                    Frame.Navigate(typeof(PhotoViewerPage), (vault, photos, Math.Max(0, idx)));
+                }
+                else if (item.Category == Core.Organization.FileCategory.Videos || item.Category == Core.Organization.FileCategory.Audio)
+                {
+                    Frame.Navigate(typeof(MediaPlayerPage), (vault, item.Entry));
+                }
+                else if (item.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                {
+                    Frame.Navigate(typeof(PdfViewerPage), (vault, item.Entry));
+                }
+                else if (item.Category == Core.Organization.FileCategory.TextNotes || item.FileName.EndsWith(".md", StringComparison.OrdinalIgnoreCase) || item.FileName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+                {
+                    Frame.Navigate(typeof(NotesEditorPage), (vault, item.Entry));
+                }
+            };
+
+            ViewModel.OnCreateNewNoteRequested = () =>
+            {
+                Frame.Navigate(typeof(NotesEditorPage), (vault, (IndexEntry?)null));
             };
 
             ViewModel.OnPickFilesToAdd = PickFilesToAddAsync;
