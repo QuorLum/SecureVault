@@ -1,0 +1,33 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [ "main", "feat/**", "chore/**", "fix/**", "phase-**" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test Suite & Cryptographic Verification
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore Dependencies
+        run: dotnet restore src/SecureVault.sln
+
+      - name: Build Solution (x64 Release)
+        run: dotnet build src/SecureVault.sln -c Release -p:Platform=x64 --no-restore
+
+      - name: Execute Cryptographic & Concurrency Tests
+        run: dotnet test tests/SecureVault.Core.Tests/SecureVault.Core.Tests.csproj -c Release --no-build --verbosity normal

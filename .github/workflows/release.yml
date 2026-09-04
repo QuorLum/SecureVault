@@ -1,0 +1,61 @@
+name: Release Packaging
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    name: Build & Publish Standalone Executable
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Run Test Suite
+        run: dotnet test tests/SecureVault.Core.Tests/SecureVault.Core.Tests.csproj -c Release
+
+      - name: Publish Single-File Executable
+        run: |
+          dotnet publish src/SecureVault.App/SecureVault.App.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:EnableMsixTooling=true `
+            -o ./publish
+
+      - name: Prepare Release Artifacts & Checksums
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path ./publish -Filter "*.pdb" | Remove-Item -Force
+          $exePath = "./publish/SecureVault.exe"
+          $hashResult = Get-FileHash -Path $exePath -Algorithm SHA256
+          $hashLine = "$($hashResult.Hash.ToLower())  SecureVault.exe"
+          Set-Content -Path "./publish/SecureVault-win-x64.sha256" -Value $hashLine -Encoding utf8
+
+          $version = "${{ github.ref_name }}"
+          if (-not $version) { $version = "v1.0.0" }
+          $zipPath = "./publish/SecureVault-$version-win-x64.zip"
+          Compress-Archive -Path $exePath, "./LICENSE" -DestinationPath $zipPath -Force
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            publish/SecureVault.exe
+            publish/SecureVault-win-x64.sha256
+            publish/*.zip
+          generate_release_notes: true

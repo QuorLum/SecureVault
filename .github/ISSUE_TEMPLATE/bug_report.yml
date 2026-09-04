@@ -1,0 +1,54 @@
+name: Bug Report
+description: Report an issue or unexpected behavior in SecureVault
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue! Please do NOT post real passwords, recovery mnemonics, or sensitive encrypted vault files.
+  - type: input
+    id: environment
+    attributes:
+      label: Operating System & Build
+      description: What version of Windows are you running? (e.g., Windows 11 23H2, Windows 10 22H2)
+      placeholder: "e.g., Windows 11 Build 22631 x64"
+    validations:
+      required: true
+  - type: dropdown
+    id: protection_mode
+    attributes:
+      label: Vault Protection Mode
+      options:
+        - "AES-256-GCM (Secure Mode)"
+        - "Fast Obfuscation (AES-CTR)"
+        - "Multi-Vault Chain (Multiple .vault parts)"
+        - "Not sure / Pre-login"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of what happened.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the behavior.
+      placeholder: |
+        1. Open SecureVault
+        2. Unlock vault 'test.vault'
+        3. Perform operation...
+        4. See error...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen instead?
+    validations:
+      required: true

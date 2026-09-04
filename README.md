@@ -9,11 +9,20 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/QuorLum/SecureVault/actions/workflows/ci.yml"><img src="https://github.com/QuorLum/SecureVault/actions/workflows/ci.yml/badge.svg" alt="Build & Test" /></a>
+  <a href="https://github.com/QuorLum/SecureVault/releases"><img src="https://img.shields.io/github/v/release/QuorLum/SecureVault?color=blue" alt="GitHub Release" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT" /></a>
+  <a href="tests/"><img src="https://img.shields.io/badge/Tests-123%20Passing-brightgreen" alt="Tests" /></a>
+  <img src="https://img.shields.io/badge/Platform-Windows%2010%2F11%20x64-indigo" alt="Platform: Windows" />
+</p>
+
+<p align="center">
   <a href="#threat-model">Threat Model</a> •
   <a href="#key-features">Features</a> •
+  <a href="#download-standalone-executable">Download</a> •
   <a href="#getting-started">Getting Started</a> •
   <a href="#architecture">Architecture</a> •
-  <a href="#known-limitations">Known Limitations</a> •
+  <a href="SECURITY.md">Security</a> •
   <a href="CONTRIBUTING.md">Contributing</a> •
   <a href="LICENSE">License</a>
 </p>
@@ -57,6 +66,19 @@ Featuring built-in media players, image galleries, PDF readers, and notes editor
 
 ---
 
+## Download Standalone Executable
+
+Pre-built standalone single-file executables are available on the [GitHub Releases page](https://github.com/QuorLum/SecureVault/releases).
+
+1. Download `SecureVault.exe` or `SecureVault-v1.0.0-win-x64.zip` from the latest release.
+2. Run `SecureVault.exe` directly — no installer or external .NET runtime installation required.
+
+> [!NOTE]
+> **Windows SmartScreen Notice:**
+> Because SecureVault is an open-source, community-distributed project without an enterprise code-signing certificate, Windows SmartScreen may show an unrecognized-publisher warning on first run (*"Windows protected your PC"*). Click **More info** → **Run anyway** to launch the application. You can verify the SHA-256 checksum of your download against the official `.sha256` hash published with each release.
+
+---
+
 ## Getting Started
 
 ### System Requirements
@@ -81,6 +103,16 @@ dotnet test tests/SecureVault.Core.Tests/SecureVault.Core.Tests.csproj
 ```
 
 All 123 tests across core crypto, file operations, multi-part chains, and concurrency will execute and validate container integrity.
+
+### Packaging Standalone Single-File Executable
+
+To package the entire application (WinUI 3, LibVLC, SkiaSharp, PDFium, and .NET 8 runtime) into a single standalone `SecureVault.exe` with companion SHA-256 checksums and zip archive:
+
+```powershell
+.\scripts\publish-single-file.ps1
+```
+
+The output executable and release bundle are placed in `./publish/SecureVault.exe`.
 
 ---
 
@@ -126,7 +158,7 @@ SecureVault/
 
 ## Contributing
 
-We welcome contributions to SecureVault! Please review [CONTRIBUTING.md](CONTRIBUTING.md) for full details on code conventions, pull requests, and security reporting.
+We welcome contributions to SecureVault! Please review [CONTRIBUTING.md](CONTRIBUTING.md) for code conventions, pull requests, and guidelines. For vulnerability disclosures, please refer to our [Security Policy](SECURITY.md).
 
 > [!IMPORTANT]
 > **Non-negotiable rule**: Changes to anything in `Crypto/`, `Format/`, or `Integrity/` require a deterministic test-vector diff in the PR, not just passing existing tests.

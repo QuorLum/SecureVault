@@ -1,0 +1,30 @@
+name: Feature Request
+description: Suggest an idea or architectural improvement for SecureVault
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Feature proposals should align with SecureVault's core invariants (Zero-Disk-Write, authenticated per-chunk encryption, and local-first sovereignty).
+  - type: textarea
+    id: problem
+    attributes:
+      label: Is your feature request related to a problem?
+      description: A clear description of what problem you are trying to solve.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Describe the proposed solution
+      description: Detailed explanation of how you would like this feature to work.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Describe alternatives considered
+      description: Any alternative designs, formats, or workarounds you considered.
+    validations:
+      required: false
