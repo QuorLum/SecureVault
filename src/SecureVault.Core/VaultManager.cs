@@ -27,6 +27,15 @@ public sealed class VaultManager : IDisposable
     public Guid VaultUUID => _header.VaultUUID;
     public IReadOnlyList<IndexEntry> Files => _index.Entries.Where(e => !e.IsDeleted).ToList();
     public bool IsLocked => _disposed;
+    public long StreamLength => _stream.Length;
+
+    internal SecureBuffer MasterKey => _masterKey;
+    internal EncryptionService Encryption => _encryption;
+    internal ReedSolomonCodec RsCodec => _rsCodec;
+    internal VaultHeader Header => _header;
+    internal VaultIndex Index => _index;
+    internal FileStream Stream => _stream;
+    internal void PersistIndexAndFooter() => SaveIndexAndFooter();
 
     private VaultManager(
         string vaultPath,

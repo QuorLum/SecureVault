@@ -72,7 +72,7 @@ public sealed class ChunkWriter
         span[0x0008] = (byte)_protectionMode;
         nonce.CopyTo(span[0x0009..0x0015]);
         authTag.CopyTo(span[0x0015..0x0025]);
-        BinaryPrimitives.WriteUInt16LittleEndian(span[0x0025..0x0027], (ushort)rsParity.Length);
+        BinaryPrimitives.WriteUInt16LittleEndian(span[0x0025..0x0027], (ushort)Math.Min((int)ushort.MaxValue, rsParity.Length));
 
         _stream.Write(header);
         _stream.Write(payload);
@@ -86,7 +86,7 @@ public sealed class ChunkWriter
             CRC32 = crc32,
             Nonce = nonce,
             AuthTag = authTag,
-            RSParityLength = (ushort)rsParity.Length
+            RSParityLength = (uint)rsParity.Length
         };
     }
 
@@ -129,7 +129,7 @@ public sealed class ChunkWriter
         span[0x0008] = (byte)protectionMode;
         nonce.CopyTo(span[0x0009..0x0015]);
         authTag.CopyTo(span[0x0015..0x0025]);
-        BinaryPrimitives.WriteUInt16LittleEndian(span[0x0025..0x0027], (ushort)rsParity.Length);
+        BinaryPrimitives.WriteUInt16LittleEndian(span[0x0025..0x0027], (ushort)Math.Min((int)ushort.MaxValue, rsParity.Length));
 
         byte[] fullChunk = new byte[header.Length + payload.Length + rsParity.Length];
         header.CopyTo(fullChunk, 0);
@@ -143,7 +143,7 @@ public sealed class ChunkWriter
             crc32,
             nonce,
             authTag,
-            (ushort)rsParity.Length);
+            (uint)rsParity.Length);
     }
 }
 
@@ -154,4 +154,4 @@ public record ProcessedChunk(
     uint CRC32,
     byte[] Nonce,
     byte[] AuthTag,
-    ushort RSParityLength);
+    uint RSParityLength);

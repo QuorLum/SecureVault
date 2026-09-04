@@ -23,6 +23,15 @@ public sealed partial class LoginPage : Page
             Frame.Navigate(typeof(MainLibraryPage), vault);
             return Task.CompletedTask;
         };
+
+        ViewModel.OnOpenRestoreRequested = async () =>
+        {
+            var dialog = new BackupRestoreDialog()
+            {
+                XamlRoot = XamlRoot
+            };
+            await dialog.ShowAsync();
+        };
     }
 
     private async Task<string?> PickVaultFileAsync()

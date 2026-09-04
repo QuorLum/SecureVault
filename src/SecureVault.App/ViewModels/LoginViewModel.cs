@@ -80,6 +80,13 @@ public partial class LoginViewModel : ObservableObject
     public Func<string[], Task<bool>>? OnPromptRecoveryKeyConfirmation { get; set; }
     public Func<Task<string?>>? OnPickVaultFile { get; set; }
     public Func<Task<string?>>? OnPickSaveVaultLocation { get; set; }
+    public Action? OnOpenRestoreRequested { get; set; }
+
+    [RelayCommand]
+    private void OpenRestoreDialog()
+    {
+        OnOpenRestoreRequested?.Invoke();
+    }
 
     [RelayCommand]
     private async Task BrowseVaultAsync()

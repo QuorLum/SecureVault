@@ -28,5 +28,5 @@ public sealed record ChunkIndexEntry
     public required byte[] AuthTag { get; init; }
 
     [Key(6)]
-    public required ushort RSParityLength { get; init; }
+    public required uint RSParityLength { get; init; }
 }

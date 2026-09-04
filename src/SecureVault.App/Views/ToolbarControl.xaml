@@ -38,6 +38,18 @@
                     FontSize="12" 
                     CornerRadius="{StaticResource ButtonCornerRadius}" 
                     AutomationProperties.Name="File Manager" />
+
+            <Button Content="Backup" 
+                    Command="{x:Bind ViewModel.OpenBackupDialogCommand, Mode=OneWay}" 
+                    FontSize="12" 
+                    CornerRadius="{StaticResource ButtonCornerRadius}" 
+                    AutomationProperties.Name="Backup Vault" />
+
+            <Button Content="Vault Chain" 
+                    Command="{x:Bind ViewModel.OpenVaultChainHealthDialogCommand, Mode=OneWay}" 
+                    FontSize="12" 
+                    CornerRadius="{StaticResource ButtonCornerRadius}" 
+                    AutomationProperties.Name="Vault Chain Health" />
         </StackPanel>
 
         <!-- Center: Search Box -->

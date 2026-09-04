@@ -1,0 +1,172 @@
+<ContentDialog
+    x:Class="SecureVault.App.Views.BackupRestoreDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:SecureVault.App.ViewModels"
+    mc:Ignorable="d"
+    Title="Backup &amp; Restore Manager"
+    CloseButtonText="Close"
+    DefaultButton="None"
+    CornerRadius="12"
+    Background="#09090B">
+
+    <Grid Width="560" Height="480">
+        <TabView SelectedIndex="0" TabWidthMode="Equal">
+            <!-- TAB 1: CREATE BACKUP -->
+            <TabViewItem Header="Create Backup" IsClosable="False">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="16" Padding="12,16">
+                        <!-- Vault File -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Source Vault" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBox Text="{x:Bind ViewModel.VaultPath, Mode=OneWay}" IsReadOnly="True" FontSize="12" />
+                        </StackPanel>
+
+                        <!-- Backup Type -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Archive Format" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <StackPanel Orientation="Horizontal" Spacing="24">
+                                <RadioButton Content="Full Container (.vault)" 
+                                             IsChecked="{x:Bind ViewModel.IsSplitBackup, Mode=TwoWay, Converter={StaticResource BoolToInvertedConverter}}" />
+                                <RadioButton Content="Split Archive (.part001, .part002)" 
+                                             IsChecked="{x:Bind ViewModel.IsSplitBackup, Mode=TwoWay}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Split Size Selector (Visible when Split Archive is selected) -->
+                        <StackPanel Spacing="6" Visibility="{x:Bind ViewModel.IsSplitBackup, Mode=OneWay, Converter={StaticResource BoolToVisibleConverter}}">
+                            <TextBlock Text="Split Part Size" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <ComboBox SelectedIndex="{x:Bind ViewModel.SelectedSplitSizeIndex, Mode=TwoWay}" HorizontalAlignment="Stretch" FontSize="12">
+                                <ComboBoxItem Content="50 GB — Cloud-safe archive" />
+                                <ComboBoxItem Content="25 GB — Standard BD-R / Cloud" />
+                                <ComboBoxItem Content="10 GB — Fast transfer chunks" />
+                                <ComboBoxItem Content="4 GB — FAT32 / USB compatibility" />
+                                <ComboBoxItem Content="1 GB — Compact segments" />
+                                <ComboBoxItem Content="100 MB — Network upload chunks" />
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Destination Folder -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Backup Destination Folder" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="{x:Bind ViewModel.BackupDestinationFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                         PlaceholderText="Select folder to save backup" FontSize="12" />
+                                <Button Grid.Column="1" Command="{x:Bind ViewModel.BrowseBackupDestinationCommand}">
+                                    <FontIcon Glyph="&#xED25;" FontSize="13" />
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- Progress Bar & Status -->
+                        <StackPanel Spacing="6" Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BoolToVisibleConverter}}">
+                            <ProgressBar Value="{x:Bind ViewModel.ProgressPercent, Mode=OneWay}" Maximum="100" Height="6" />
+                            <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
+
+                        <!-- Success / Error Message -->
+                        <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" 
+                                   Foreground="#10B981" FontSize="12" FontWeight="SemiBold"
+                                   Visibility="{x:Bind ViewModel.IsSuccess, Mode=OneWay, Converter={StaticResource BoolToVisibleConverter}}" />
+                        <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" 
+                                   Foreground="#EF4444" FontSize="12" TextWrapping="Wrap"
+                                   Visibility="{x:Bind ViewModel.HasError, Mode=OneWay, Converter={StaticResource BoolToVisibleConverter}}" />
+
+                        <!-- Start Backup Action -->
+                        <Button Content="Start Backup" 
+                                Command="{x:Bind ViewModel.CreateBackupCommand}" 
+                                Style="{StaticResource AccentButtonStyle}" 
+                                HorizontalAlignment="Stretch" 
+                                Height="36" />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabViewItem>
+
+            <!-- TAB 2: RESTORE FROM BACKUP -->
+            <TabViewItem Header="Restore Vault" IsClosable="False">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="16" Padding="12,16">
+                        <!-- Source File Picker -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Backup Archive (.backup.manifest or .vault)" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="{x:Bind ViewModel.RestoreSourcePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                         PlaceholderText="Select manifest or vault file" FontSize="12" />
+                                <Button Grid.Column="1" Command="{x:Bind ViewModel.BrowseRestoreSourceCommand}">
+                                    <FontIcon Glyph="&#xED25;" FontSize="13" />
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- Parts Integrity Status List -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Archive Parts Status" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <Border Background="#18181B" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="8" MaxHeight="140">
+                                <ListView ItemsSource="{x:Bind ViewModel.PartInspectionItems, Mode=OneWay}" SelectionMode="None">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:PartInspectionItem">
+                                            <Grid ColumnSpacing="12" Padding="8,4">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{x:Bind FileName}" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Grid.Column="1" Text="{x:Bind StatusText}" Foreground="{x:Bind StatusColor}" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Restore Destination Folder -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Restore Destination Folder" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="{x:Bind ViewModel.RestoreDestinationFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                         PlaceholderText="Select folder to unpack restored vault" FontSize="12" />
+                                <Button Grid.Column="1" Command="{x:Bind ViewModel.BrowseRestoreDestinationCommand}">
+                                    <FontIcon Glyph="&#xED25;" FontSize="13" />
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- Restore Progress & Status -->
+                        <StackPanel Spacing="6" Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BoolToVisibleConverter}}">
+                            <ProgressBar Value="{x:Bind ViewModel.ProgressPercent, Mode=OneWay}" Maximum="100" Height="6" />
+                            <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
+
+                        <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" 
+                                   Foreground="#10B981" FontSize="12" FontWeight="SemiBold"
+                                   Visibility="{x:Bind ViewModel.IsSuccess, Mode=OneWay, Converter={StaticResource BoolToVisibleConverter}}" />
+                        <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" 
+                                   Foreground="#EF4444" FontSize="12" TextWrapping="Wrap"
+                                   Visibility="{x:Bind ViewModel.HasError, Mode=OneWay, Converter={StaticResource BoolToVisibleConverter}}" />
+
+                        <!-- Execute Restore Action -->
+                        <Button Content="Restore Vault" 
+                                Command="{x:Bind ViewModel.ExecuteRestoreCommand}" 
+                                Style="{StaticResource AccentButtonStyle}" 
+                                HorizontalAlignment="Stretch" 
+                                Height="36" />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabViewItem>
+        </TabView>
+    </Grid>
+</ContentDialog>

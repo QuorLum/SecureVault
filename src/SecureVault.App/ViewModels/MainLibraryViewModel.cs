@@ -81,6 +81,8 @@ public partial class MainLibraryViewModel : ObservableObject
     public Action<FileItemViewModel>? OnOpenFileRequested { get; set; }
     public Action? OnCreateNewNoteRequested { get; set; }
     public Action? OnOpenFileManagerRequested { get; set; }
+    public Action? OnOpenBackupRequested { get; set; }
+    public Action? OnOpenVaultChainHealthRequested { get; set; }
     public Func<Task<IReadOnlyList<string>>>? OnPickFilesToAdd { get; set; }
     public Func<Task<string?>>? OnPickFolderToAdd { get; set; }
     public Func<string, Task<string?>>? OnPickExportDestinationFile { get; set; }
@@ -375,6 +377,18 @@ public partial class MainLibraryViewModel : ObservableObject
         item.IsFavorite = !item.IsFavorite;
         _tagService.SetFavorite(item.FileGuid, item.IsFavorite);
         RefreshData();
+    }
+
+    [RelayCommand]
+    public void OpenBackupDialog()
+    {
+        OnOpenBackupRequested?.Invoke();
+    }
+
+    [RelayCommand]
+    public void OpenVaultChainHealthDialog()
+    {
+        OnOpenVaultChainHealthRequested?.Invoke();
     }
 
     [RelayCommand]

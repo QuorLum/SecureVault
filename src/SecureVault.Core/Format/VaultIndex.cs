@@ -69,6 +69,12 @@ public sealed class IndexEntry
 
     [Key(20)]
     public Guid? ParentFolderGuid { get; set; }
+
+    [Key(21)]
+    public int PartIndex { get; set; } = 0;
+
+    [IgnoreMember]
+    public bool IsAvailable { get; set; } = true;
 }
 
 [MessagePackObject]

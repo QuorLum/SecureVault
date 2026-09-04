@@ -144,10 +144,56 @@
 
 ---
 
-## Current State: Phase 4 Complete (All 99 Tests Passing, Solution Builds with 0 Errors)
-- **Current Milestone:** Phase 4: Advanced Features — **COMPLETE**
-- **Next Milestone:** Phase 5: Hardening & Production Release
-- **Branch:** `phase-4/advanced-features`
+### Phase 5: Backup & Multi-Vault Chain (Backup, Restore, Split Archives, 200GB Limit & Multi-Vault)
+- [x] **Chain-Aware Backup Subsystem (G01–G06, G15):**
+  - `BackupService`: Enumerates all active chain files (`.vault`, `.vault2`, `.vault3`...), performs raw byte buffered streaming without decrypting or exposing plaintext, creates companion `.sha256` files in `sha256sum` format, and writes `<vaultName>.backup.manifest`.
+  - `HashVerifier`: Incremental streaming SHA-256 calculator and companion file generator/verifier.
+  - `SplitBackupService`: Configurable split archives (50GB default / arbitrary test sizes e.g. 50KB/100KB) into `.part001`, `.part002`... with per-part SHA-256 and whole-file SHA-256. Raw binary concatenation (`copy /b part1+part2`) reassembles the original vault.
+  - `BackupManifest`: JSON model recording all chain parts, part sizes, and per-split SHA-256 checksums.
+- [x] **Restore Subsystem & Verification (G07–G10, G14):**
+  - `RestoreService`:
+    - `CheckPartsAsync`: Pre-flight check validating all chain parts and split parts against manifest hashes, reporting specific missing or corrupted parts (`{VaultFile}: {SplitFile} - {Reason}`).
+    - `RestoreChainAsync`: Atomic multi-vault chain restore, reassembling split parts, recreating live `.chain.manifest`, and verifying whole-file SHA-256 before completion.
+    - Re-download recovery: Replacing a corrupted split part immediately validates and restores cleanly.
+  - `BackupVerifier`: Offline pre-flight health verification of headers and manifests without vault password.
+  - `FormatUpgrader`: Format version inspection and safe upgrade with `.vault.backup-v{old}` rollback copy.
+- [x] **Multi-Vault Chain Subsystem (O01–O12, B23–B26):**
+  - `VaultConstants.MaxVaultFileSizeBytes`: 200GB per-file limit (B23, O01).
+  - `SecondaryVaultHeader`: 128-byte minimal header for `.vault2`, `.vault3`... referencing Master UUID, part index, and reusing `"SecureVault-HeaderHMAC-v1"` HMAC subkey derivation.
+  - `VaultChainManager`:
+    - **File-spans-part rollover rule:** If a file's estimated size exceeds the current part's remaining space, rolls to next part (`.vault{N+1}`) *before* writing any chunks. No chunks span multiple files.
+    - `GlobalIndex` in master vault references all files across the chain with `PartIndex`.
+    - Transparent cross-part `OpenFileStream` and `ReadAllBytesAsync`.
+    - `MoveFileBetweenParts`: Moves independent physical chunks between parts and updates indices without pointer sharing.
+  - `VaultChainManifest`: Live linking file `<vaultName>.chain.manifest` keeping track of active disk parts.
+  - `VaultChainHealth`:
+    - Missing part detection with graceful degradation: master vault unlocks cleanly even if secondary parts are unplugged/missing.
+    - Files in available parts remain completely accessible; files in missing parts are marked unavailable and throw `VaultPartMissingException` with actionable guidance.
+    - Plugged-back-in parts become immediately available on sync.
+- [x] **WinUI 3 App Integration:**
+  - `BackupRestoreDialog.xaml` & `BackupRestoreViewModel`: Tabbed dialog for Creating Backups (Single / Split with size selector) and Restoring Archives with per-part visual verification pills.
+  - `VaultChainHealthDialog.xaml` & `VaultChainHealthViewModel`: Live metrics dashboard displaying all chain parts, sizes, per-part limit (200GB), and missing part warnings.
+  - Added "Backup" and "Vault Chain" buttons to `ToolbarControl.xaml`.
+  - Added "Restore Vault from Backup..." link to `LoginPage.xaml` for disaster recovery before opening.
+- [x] **Test Suite Verification:**
+  - Added `tests/vectors/backup-manifest-schema.json`.
+  - Added `tests/vectors/sha256-companion.json`.
+  - Added `BackupServiceTests.cs` (single-file backup, companion sha256 files, whole-chain backups).
+  - Added `SplitBackupTests.cs` (splitting, naming, per-part hashes, raw binary concatenation).
+  - Added `RestoreServiceTests.cs` (split restoration, missing part detection, corrupt part detection, re-download replacement).
+  - Added `BackupVerifierTests.cs` (offline inspection without password).
+  - Added `VaultChainManagerTests.cs` (file-spans-part rollover rule, cross-part reads, move file).
+  - Added `VaultChainHealthTests.cs` (graceful degradation, missing part detection, reconnection).
+  - **Test Results:** 110 / 110 Passed (100% success rate).
+  - `src/SecureVault.sln` builds with **0 errors and 0 warnings** on x64.
+
+---
+
+## Current State: Phase 5 Complete (All 110 Tests Passing, Solution Builds with 0 Errors)
+- **Current Milestone:** Phase 5: Backup & Multi-Vault Chain — **COMPLETE**
+- **Next Milestone:** Phase 6: Polish & Hardening
+- **Branch:** `phase-5/backup-multivault`
 - **Environment:** Isolated .NET 8 SDK (8.0.424) in `$env:USERPROFILE\.dotnet`
 - **Activation:** Run `. .\activate.ps1` in PowerShell to set `DOTNET_ROOT` and `PATH`
+
 

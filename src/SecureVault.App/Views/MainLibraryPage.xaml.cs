@@ -69,6 +69,25 @@ public sealed partial class MainLibraryPage : Page
                 Frame.Navigate(typeof(FileManagerPage), vault);
             };
 
+            ViewModel.OnOpenBackupRequested = async () =>
+            {
+                var dialog = new BackupRestoreDialog(vault.VaultPath)
+                {
+                    XamlRoot = XamlRoot
+                };
+                await dialog.ShowAsync();
+            };
+
+            ViewModel.OnOpenVaultChainHealthRequested = async () =>
+            {
+                var chain = new Core.MultiVault.VaultChainManager(vault);
+                var dialog = new VaultChainHealthDialog(chain)
+                {
+                    XamlRoot = XamlRoot
+                };
+                await dialog.ShowAsync();
+            };
+
             ViewModel.OnPickFilesToAdd = PickFilesToAddAsync;
             ViewModel.OnPickFolderToAdd = PickFolderToAddAsync;
             ViewModel.OnPickExportDestinationFile = PickExportDestinationFileAsync;

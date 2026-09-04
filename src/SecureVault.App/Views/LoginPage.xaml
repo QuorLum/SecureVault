@@ -88,6 +88,11 @@
                                          FontSize="12" 
                                          HorizontalAlignment="Right" />
                     </Grid>
+
+                    <HyperlinkButton Content="Restore Vault from Backup..." 
+                                     Command="{x:Bind ViewModel.OpenRestoreDialogCommand}" 
+                                     FontSize="12" 
+                                     HorizontalAlignment="Center" />
                 </StackPanel>
 
                 <!-- Mode 2: Recovery Key Unlock -->

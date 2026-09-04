@@ -59,10 +59,10 @@
 | B21 | XOR-masked magic bytes | ✅ | 1 |
 | B22 | Per-chunk unique nonce | ✅ | 1 |
 | B22a | Per-chunk AEAD unit | ✅ | 1 |
-| B23 | 200GB per vault limit | 📋 | 5 |
-| B24 | Multi-vault linking | 📋 | 5 |
-| B25 | Cross-vault verification | 📋 | 5 |
-| B26 | Vault manifest | 📋 | 5 |
+| B23 | 200GB per vault limit | ✅ | 5 |
+| B24 | Multi-vault linking | ✅ | 5 |
+| B25 | Cross-vault verification | ✅ | 5 |
+| B26 | Vault manifest | ✅ | 5 |
 | B27 | RS uses library (no custom impl) | ✅ | 1 |
 
 ## CATEGORY C: FILE OPERATIONS
@@ -170,22 +170,22 @@
 
 | ID | Feature | Status | Phase |
 |----|---------|--------|-------|
-| G01 | Single-file backup | 📋 | 5 |
-| G02 | Split backup (50GB parts) | 📋 | 5 |
-| G03 | Backup manifest (JSON) | 📋 | 5 |
-| G04 | Per-part SHA-256 | 📋 | 5 |
-| G05 | Whole-file SHA-256 | 📋 | 5 |
-| G06 | .vault.sha256 companion | 📋 | 5 |
-| G07 | Restore from single file | 📋 | 5 |
-| G08 | Restore from split parts | 📋 | 5 |
-| G09 | Re-download corrupted part | 📋 | 5 |
-| G10 | Backup verification | 📋 | 5 |
-| G11 | Vault self-contained | 📋 | 5 |
-| G12 | No external dependencies | 📋 | 5 |
-| G13 | Any version opens any vault | 📋 | 5 |
-| G14 | Format version upgrade | 📋 | 5 |
-| G15 | Multi-vault verification | 📋 | 5 |
-| G16 | List files per vault part | 📋 | 5 |
+| G01 | Single-file backup | ✅ | 5 |
+| G02 | Split backup (50GB parts) | ✅ | 5 |
+| G03 | Backup manifest (JSON) | ✅ | 5 |
+| G04 | Per-part SHA-256 | ✅ | 5 |
+| G05 | Whole-file SHA-256 | ✅ | 5 |
+| G06 | .vault.sha256 companion | ✅ | 5 |
+| G07 | Restore from single file | ✅ | 5 |
+| G08 | Restore from split parts | ✅ | 5 |
+| G09 | Re-download corrupted part | ✅ | 5 |
+| G10 | Backup verification | ✅ | 5 |
+| G11 | Vault self-contained | ✅ | 5 |
+| G12 | No external dependencies | ✅ | 5 |
+| G13 | Any version opens any vault | ✅ | 5 |
+| G14 | Format version upgrade | ✅ | 5 |
+| G15 | Multi-vault verification | ✅ | 5 |
+| G16 | List files per vault part | ✅ | 5 |
 
 ## CATEGORY H: GALLERY
 
@@ -354,15 +354,15 @@
 
 | ID | Feature | Status | Phase |
 |----|---------|--------|-------|
-| O01 | 200GB per vault limit | 📋 | 5 |
-| O02 | Automatic overflow to .vault2 | 📋 | 5 |
-| O03 | Overflow to .vault3+ | 📋 | 5 |
-| O04 | Master vault global index | 📋 | 5 |
-| O05 | Per-vault local index | 📋 | 5 |
-| O06 | Cross-vault file reference | 📋 | 5 |
-| O07 | Vault chain manifest | 📋 | 5 |
-| O08 | Missing vault detection | 📋 | 5 |
-| O09 | Graceful degradation | 📋 | 5 |
-| O10 | Per-vault integrity check | 📋 | 5 |
-| O11 | Move files between parts | 📋 | 5 |
-| O12 | Vault chain health dashboard | 📋 | 5 |
+| O01 | 200GB per vault limit | ✅ | 5 |
+| O02 | Automatic overflow to .vault2 | ✅ | 5 |
+| O03 | Overflow to .vault3+ | ✅ | 5 |
+| O04 | Master vault global index | ✅ | 5 |
+| O05 | Per-vault local index | ✅ | 5 |
+| O06 | Cross-vault file reference | ✅ | 5 |
+| O07 | Vault chain manifest | ✅ | 5 |
+| O08 | Missing vault detection | ✅ | 5 |
+| O09 | Graceful degradation | ✅ | 5 |
+| O10 | Per-vault integrity check | ✅ | 5 |
+| O11 | Move files between parts | ✅ | 5 |
+| O12 | Vault chain health dashboard | ✅ | 5 |

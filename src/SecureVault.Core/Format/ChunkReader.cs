@@ -51,7 +51,7 @@ public sealed class ChunkReader
         var protectionMode = (ProtectionMode)headerSpan[0x0008];
         byte[] nonce = headerSpan[0x0009..0x0015].ToArray();
         byte[] authTag = headerSpan[0x0015..0x0025].ToArray();
-        ushort rsParityLength = BinaryPrimitives.ReadUInt16LittleEndian(headerSpan[0x0025..0x0027]);
+        ushort headerParityLen = BinaryPrimitives.ReadUInt16LittleEndian(headerSpan[0x0025..0x0027]);
 
         if (chunkDataLength != entry.ChunkDataLength)
         {
@@ -64,6 +64,14 @@ public sealed class ChunkReader
         {
             throw new CorruptedChunkException((int)entry.ChunkSequence, "Chunk payload truncated.");
         }
+
+        // Determine actual RS parity length:
+        // RS(255, 223) requires ceil(payload.Length / 223) * 32 parity bytes when enabled
+        int blockCount = ((int)chunkDataLength + ReedSolomonCodec.DataBlockSize - 1) / ReedSolomonCodec.DataBlockSize;
+        int expectedParityLen = blockCount * ReedSolomonCodec.ParityBlockSize;
+        int rsParityLength = (headerParityLen > 0 || entry.RSParityLength > 0)
+            ? (entry.RSParityLength > 0 ? (int)entry.RSParityLength : expectedParityLen)
+            : 0;
 
         byte[] parity = new byte[rsParityLength];
         int parityRead = _stream.ReadAtLeast(parity, rsParityLength, throwOnEndOfStream: false);

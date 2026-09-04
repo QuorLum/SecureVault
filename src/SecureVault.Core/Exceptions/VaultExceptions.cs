@@ -63,3 +63,26 @@ public class UncorrectableCorruptionException : VaultException
     public UncorrectableCorruptionException(string message) : base(message) { }
     public UncorrectableCorruptionException(string message, Exception innerException) : base(message, innerException) { }
 }
+
+public class VaultPartMissingException : VaultException
+{
+    public int PartIndex { get; }
+    public string ExpectedFileName { get; }
+
+    public VaultPartMissingException(int partIndex, string expectedFileName, string message) : base(message)
+    {
+        PartIndex = partIndex;
+        ExpectedFileName = expectedFileName;
+    }
+}
+
+public class IncompleteBackupException : VaultException
+{
+    public IReadOnlyList<string> MissingOrCorruptParts { get; }
+
+    public IncompleteBackupException(string message, IReadOnlyList<string> failedParts) : base(message)
+    {
+        MissingOrCorruptParts = failedParts;
+    }
+}
+
