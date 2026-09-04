@@ -1,17 +1,47 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SecureVault.App.Services;
 using SecureVault.Core;
 using SecureVault.Core.Exceptions;
 
 namespace SecureVault.App.ViewModels;
 
+public enum LoginViewMode
+{
+    FirstTimeWelcome,
+    ReturningUserUnlock,
+    CreateVaultWizard,
+    RecoveryUnlock
+}
+
 /// <summary>
-/// ViewModel controlling vault unlock, credential entry, brute-force delays, and creation flow (N02-N04, M11).
+/// ViewModel controlling vault unlock, credential entry, first-time onboarding,
+/// in-page vault creation wizard, and brute-force lockout protection (N02-N04, M11).
 /// </summary>
 public partial class LoginViewModel : ObservableObject
 {
+    private readonly AppSettingsService _settings = AppSettingsService.Instance;
+
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsWelcomeVisible))]
+    [NotifyPropertyChangedFor(nameof(IsUnlockVisible))]
+    [NotifyPropertyChangedFor(nameof(IsCreateWizardVisible))]
+    [NotifyPropertyChangedFor(nameof(IsRecoveryVisible))]
+    private LoginViewMode _currentViewMode = LoginViewMode.FirstTimeWelcome;
+
+    public bool IsWelcomeVisible => CurrentViewMode == LoginViewMode.FirstTimeWelcome;
+    public bool IsUnlockVisible => CurrentViewMode == LoginViewMode.ReturningUserUnlock;
+    public bool IsCreateWizardVisible => CurrentViewMode == LoginViewMode.CreateVaultWizard;
+    public bool IsRecoveryVisible => CurrentViewMode == LoginViewMode.RecoveryUnlock;
+
+    // --- Unlock State ---
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(VaultDisplayName))]
+    [NotifyPropertyChangedFor(nameof(VaultDirectoryDisplay))]
     private string _vaultPath = string.Empty;
+
+    public string VaultDisplayName => string.IsNullOrWhiteSpace(VaultPath) ? "No Vault Selected" : Path.GetFileName(VaultPath);
+    public string VaultDirectoryDisplay => string.IsNullOrWhiteSpace(VaultPath) ? string.Empty : (Path.GetDirectoryName(VaultPath) ?? string.Empty);
 
     partial void OnVaultPathChanged(string value)
     {
@@ -33,11 +63,13 @@ public partial class LoginViewModel : ObservableObject
             }
             catch
             {
+                PasswordHint = string.Empty;
                 ShowPasswordHint = false;
             }
         }
         else
         {
+            PasswordHint = string.Empty;
             ShowPasswordHint = false;
         }
     }
@@ -61,9 +93,6 @@ public partial class LoginViewModel : ObservableObject
     private string _busyMessage = "Decrypting vault container...";
 
     [ObservableProperty]
-    private bool _showRecoveryInput;
-
-    [ObservableProperty]
     private string _recoveryWordsInput = string.Empty;
 
     [ObservableProperty]
@@ -75,12 +104,116 @@ public partial class LoginViewModel : ObservableObject
     [ObservableProperty]
     private bool _isLockedOut;
 
+    // --- In-Page Vault Creation Wizard State ---
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NewVaultComputedPath))]
+    private string _newVaultName = "Personal";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NewVaultComputedPath))]
+    private string _newVaultFolder = string.Empty;
+
+    public string NewVaultComputedPath
+    {
+        get
+        {
+            var folder = string.IsNullOrWhiteSpace(NewVaultFolder)
+                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "SecureVault")
+                : NewVaultFolder;
+            var name = string.IsNullOrWhiteSpace(NewVaultName) ? "Personal" : NewVaultName.Trim();
+            if (!name.EndsWith(".vault", StringComparison.OrdinalIgnoreCase))
+            {
+                name += ".vault";
+            }
+            return Path.Combine(folder, name);
+        }
+    }
+
+    [ObservableProperty]
+    private string _newVaultPassword = string.Empty;
+
+    [ObservableProperty]
+    private string _newVaultPasswordConfirm = string.Empty;
+
+    [ObservableProperty]
+    private string _newVaultHint = string.Empty;
+
+    // --- Callbacks ---
     public Func<VaultManager, Task>? OnUnlockSuccess { get; set; }
-    public Func<string, Task<(bool Confirmed, string Password)>>? OnPromptNewVaultPassword { get; set; }
     public Func<string[], Task<bool>>? OnPromptRecoveryKeyConfirmation { get; set; }
     public Func<Task<string?>>? OnPickVaultFile { get; set; }
-    public Func<Task<string?>>? OnPickSaveVaultLocation { get; set; }
+    public Func<Task<string?>>? OnPickFolder { get; set; }
     public Action? OnOpenRestoreRequested { get; set; }
+
+    public LoginViewModel()
+    {
+        var defaultDocs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        NewVaultFolder = Path.Combine(defaultDocs, "SecureVault");
+
+        InitializeStartupState();
+    }
+
+    public void InitializeStartupState()
+    {
+        var lastVault = _settings.LastVaultPath;
+        if (!string.IsNullOrWhiteSpace(lastVault) && File.Exists(lastVault))
+        {
+            VaultPath = lastVault;
+            CurrentViewMode = LoginViewMode.ReturningUserUnlock;
+        }
+        else
+        {
+            CurrentViewMode = LoginViewMode.FirstTimeWelcome;
+        }
+    }
+
+    // --- Navigation & Mode Switching Commands ---
+    [RelayCommand]
+    private void GoToWelcome()
+    {
+        ErrorMessage = string.Empty;
+        CurrentViewMode = LoginViewMode.FirstTimeWelcome;
+    }
+
+    [RelayCommand]
+    private void GoToCreateWizard()
+    {
+        ErrorMessage = string.Empty;
+        NewVaultPassword = string.Empty;
+        NewVaultPasswordConfirm = string.Empty;
+        NewVaultHint = string.Empty;
+        CurrentViewMode = LoginViewMode.CreateVaultWizard;
+    }
+
+    [RelayCommand]
+    private void GoToUnlock()
+    {
+        ErrorMessage = string.Empty;
+        Password = string.Empty;
+        CurrentViewMode = LoginViewMode.ReturningUserUnlock;
+    }
+
+    [RelayCommand]
+    private void GoToRecovery()
+    {
+        ErrorMessage = string.Empty;
+        RecoveryWordsInput = string.Empty;
+        CurrentViewMode = LoginViewMode.RecoveryUnlock;
+    }
+
+    [RelayCommand]
+    private void CancelCreateWizard()
+    {
+        ErrorMessage = string.Empty;
+        if (!string.IsNullOrWhiteSpace(VaultPath) && File.Exists(VaultPath))
+        {
+            CurrentViewMode = LoginViewMode.ReturningUserUnlock;
+        }
+        else
+        {
+            CurrentViewMode = LoginViewMode.FirstTimeWelcome;
+        }
+    }
 
     [RelayCommand]
     private void OpenRestoreDialog()
@@ -98,17 +231,25 @@ public partial class LoginViewModel : ObservableObject
             {
                 VaultPath = path;
                 ErrorMessage = string.Empty;
+                CurrentViewMode = LoginViewMode.ReturningUserUnlock;
             }
         }
     }
 
     [RelayCommand]
-    private void ToggleRecoveryMode()
+    private async Task BrowseNewVaultFolderAsync()
     {
-        ShowRecoveryInput = !ShowRecoveryInput;
-        ErrorMessage = string.Empty;
+        if (OnPickFolder != null)
+        {
+            var folder = await OnPickFolder();
+            if (!string.IsNullOrWhiteSpace(folder))
+            {
+                NewVaultFolder = folder;
+            }
+        }
     }
 
+    // --- Core Unlock Command ---
     [RelayCommand(CanExecute = nameof(CanUnlock))]
     private async Task UnlockAsync()
     {
@@ -120,7 +261,7 @@ public partial class LoginViewModel : ObservableObject
 
         if (string.IsNullOrWhiteSpace(Password))
         {
-            ErrorMessage = "Please enter the vault password.";
+            ErrorMessage = "Please enter the vault master password.";
             return;
         }
 
@@ -133,6 +274,9 @@ public partial class LoginViewModel : ObservableObject
             var vault = await VaultManager.OpenAsync(VaultPath, Password);
             FailedAttempts = 0;
             Password = string.Empty;
+
+            // Remember last successful vault
+            _settings.LastVaultPath = VaultPath;
 
             if (OnUnlockSuccess != null)
             {
@@ -166,6 +310,7 @@ public partial class LoginViewModel : ObservableObject
         }
     }
 
+    // --- Recovery Unlock Command ---
     [RelayCommand(CanExecute = nameof(CanUnlock))]
     private async Task UnlockWithRecoveryAsync()
     {
@@ -198,6 +343,9 @@ public partial class LoginViewModel : ObservableObject
             FailedAttempts = 0;
             RecoveryWordsInput = string.Empty;
 
+            // Remember last successful vault
+            _settings.LastVaultPath = VaultPath;
+
             if (OnUnlockSuccess != null)
             {
                 await OnUnlockSuccess(vault);
@@ -218,49 +366,113 @@ public partial class LoginViewModel : ObservableObject
         }
     }
 
+    // --- In-Page Vault Creation Command ---
     [RelayCommand(CanExecute = nameof(CanUnlock))]
-    private async Task CreateVaultAsync()
+    private async Task CreateVaultInPageAsync()
     {
-        if (OnPickSaveVaultLocation == null || OnPromptNewVaultPassword == null || OnPromptRecoveryKeyConfirmation == null)
-            return;
-
-        var savePath = await OnPickSaveVaultLocation();
-        if (string.IsNullOrWhiteSpace(savePath))
-            return;
-
-        var (confirmed, newPassword) = await OnPromptNewVaultPassword(savePath);
-        if (!confirmed || string.IsNullOrWhiteSpace(newPassword))
-            return;
-
-        IsBusy = true;
-        BusyMessage = "Generating entropy, dual key-slots, and initialized vault container...";
         ErrorMessage = string.Empty;
+
+        var targetPath = NewVaultComputedPath;
+        var folder = Path.GetDirectoryName(targetPath);
+
+        if (string.IsNullOrWhiteSpace(NewVaultPassword))
+        {
+            ErrorMessage = "Please enter a master password for the new vault.";
+            return;
+        }
+
+        if (NewVaultPassword.Length < 8)
+        {
+            ErrorMessage = "Master password must be at least 8 characters long for strong security.";
+            return;
+        }
+
+        if (NewVaultPassword != NewVaultPasswordConfirm)
+        {
+            ErrorMessage = "Passwords do not match. Please re-enter your password.";
+            return;
+        }
+
+        if (File.Exists(targetPath))
+        {
+            ErrorMessage = $"A vault file already exists at '{targetPath}'. Please choose a different name or folder.";
+            return;
+        }
 
         try
         {
-            var (vault, recoveryWords) = await VaultManager.CreateAsync(savePath, newPassword);
-
-            // N23: Enforce interactive 3-word verification gate ONLY during creation
-            bool verified = await OnPromptRecoveryKeyConfirmation(recoveryWords);
-            if (!verified)
+            if (!string.IsNullOrWhiteSpace(folder) && !Directory.Exists(folder))
             {
-                vault.Dispose();
-                if (File.Exists(savePath))
+                Directory.CreateDirectory(folder);
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Could not create target directory: {ex.Message}";
+            return;
+        }
+
+        IsBusy = true;
+        BusyMessage = "Generating entropy, dual key-slots, and initialized vault container...";
+
+        VaultManager? vault = null;
+        string[]? recoveryWords = null;
+
+        try
+        {
+            // Create the real vault directly — NO 0-byte orphan files!
+            (vault, recoveryWords) = await VaultManager.CreateAsync(targetPath, NewVaultPassword);
+
+            if (!string.IsNullOrWhiteSpace(NewVaultHint))
+            {
+                try
                 {
-                    try { File.Delete(savePath); } catch { }
+                    vault.SetPasswordHint(NewVaultHint.Trim());
                 }
-                ErrorMessage = "Vault creation cancelled: Recovery key was not verified.";
-                return;
+                catch
+                {
+                    // Hint is non-critical
+                }
             }
 
-            VaultPath = savePath;
-            if (OnUnlockSuccess != null)
+            // N23: Interactive 3-word verification gate ONLY during creation
+            if (OnPromptRecoveryKeyConfirmation != null && recoveryWords != null)
+            {
+                bool verified = await OnPromptRecoveryKeyConfirmation(recoveryWords);
+                if (!verified)
+                {
+                    vault.Dispose();
+                    vault = null;
+
+                    // Clean up created file if verification was aborted
+                    if (File.Exists(targetPath))
+                    {
+                        try { File.Delete(targetPath); } catch { }
+                    }
+
+                    ErrorMessage = "Vault creation was cancelled because the recovery phrase was not verified.";
+                    return;
+                }
+            }
+
+            VaultPath = targetPath;
+            _settings.LastVaultPath = targetPath;
+
+            if (OnUnlockSuccess != null && vault != null)
             {
                 await OnUnlockSuccess(vault);
             }
         }
         catch (Exception ex)
         {
+            if (vault != null)
+            {
+                vault.Dispose();
+            }
+            if (File.Exists(targetPath))
+            {
+                try { File.Delete(targetPath); } catch { }
+            }
             ErrorMessage = $"Failed to create vault: {ex.Message}";
         }
         finally
@@ -277,7 +489,7 @@ public partial class LoginViewModel : ObservableObject
         IsLockedOut = true;
         UnlockCommand.NotifyCanExecuteChanged();
         UnlockWithRecoveryCommand.NotifyCanExecuteChanged();
-        CreateVaultCommand.NotifyCanExecuteChanged();
+        CreateVaultInPageCommand.NotifyCanExecuteChanged();
 
         for (int sec = delaySeconds; sec > 0; sec--)
         {
@@ -291,6 +503,6 @@ public partial class LoginViewModel : ObservableObject
         LockoutSecondsRemaining = 0;
         UnlockCommand.NotifyCanExecuteChanged();
         UnlockWithRecoveryCommand.NotifyCanExecuteChanged();
-        CreateVaultCommand.NotifyCanExecuteChanged();
+        CreateVaultInPageCommand.NotifyCanExecuteChanged();
     }
 }

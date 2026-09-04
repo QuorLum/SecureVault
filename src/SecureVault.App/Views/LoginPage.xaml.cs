@@ -1,7 +1,9 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using SecureVault.App.ViewModels;
 using Windows.Storage.Pickers;
+using Windows.System;
 
 namespace SecureVault.App.Views;
 
@@ -14,10 +16,16 @@ public sealed partial class LoginPage : Page
         InitializeComponent();
         DataContext = ViewModel;
 
+        // Wire password box bindings
+        MasterPasswordBox.PasswordChanged += (s, e) => ViewModel.Password = MasterPasswordBox.Password;
+        NewVaultPasswordBox.PasswordChanged += (s, e) => ViewModel.NewVaultPassword = NewVaultPasswordBox.Password;
+        NewVaultPasswordConfirmBox.PasswordChanged += (s, e) => ViewModel.NewVaultPasswordConfirm = NewVaultPasswordConfirmBox.Password;
+
+        // Wire ViewModel delegates
         ViewModel.OnPickVaultFile = PickVaultFileAsync;
-        ViewModel.OnPickSaveVaultLocation = PickSaveVaultLocationAsync;
-        ViewModel.OnPromptNewVaultPassword = PromptNewVaultPasswordAsync;
+        ViewModel.OnPickFolder = PickFolderAsync;
         ViewModel.OnPromptRecoveryKeyConfirmation = PromptRecoveryKeyConfirmationAsync;
+
         ViewModel.OnUnlockSuccess = vault =>
         {
             Frame.Navigate(typeof(MainLibraryPage), vault);
@@ -26,17 +34,50 @@ public sealed partial class LoginPage : Page
 
         ViewModel.OnOpenRestoreRequested = async () =>
         {
-            var dialog = new BackupRestoreDialog()
+            var dialog = new BackupRestoreDialog
             {
                 XamlRoot = XamlRoot
             };
             await dialog.ShowAsync();
         };
+
+        Loaded += (s, e) =>
+        {
+            if (ViewModel.IsUnlockVisible)
+            {
+                MasterPasswordBox.Focus(FocusState.Programmatic);
+            }
+        };
+    }
+
+    private void MasterPasswordBox_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Enter)
+        {
+            e.Handled = true;
+            if (ViewModel.UnlockCommand.CanExecute(null))
+            {
+                ViewModel.UnlockCommand.Execute(null);
+            }
+        }
+    }
+
+    private void NewVaultPasswordConfirmBox_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Enter)
+        {
+            e.Handled = true;
+            if (ViewModel.CreateVaultInPageCommand.CanExecute(null))
+            {
+                ViewModel.CreateVaultInPageCommand.Execute(null);
+            }
+        }
     }
 
     private async Task<string?> PickVaultFileAsync()
     {
         var picker = new FileOpenPicker();
+        picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
         picker.FileTypeFilter.Add(".vault");
 
         var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.CurrentWindow);
@@ -46,65 +87,17 @@ public sealed partial class LoginPage : Page
         return file?.Path;
     }
 
-    private async Task<string?> PickSaveVaultLocationAsync()
+    private async Task<string?> PickFolderAsync()
     {
-        var picker = new FileSavePicker();
+        var picker = new FolderPicker();
         picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-        picker.FileTypeChoices.Add("SecureVault Container", new List<string>() { ".vault" });
-        picker.SuggestedFileName = "MyVault.vault";
+        picker.FileTypeFilter.Add("*");
 
         var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.CurrentWindow);
         WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
 
-        var file = await picker.PickSaveFileAsync();
-        return file?.Path;
-    }
-
-    private async Task<(bool Confirmed, string Password)> PromptNewVaultPasswordAsync(string vaultPath)
-    {
-        var passwordBox1 = new PasswordBox { PlaceholderText = "Enter password", Margin = new Thickness(0, 0, 0, 8) };
-        var passwordBox2 = new PasswordBox { PlaceholderText = "Confirm password" };
-
-        var dialog = new ContentDialog
-        {
-            Title = "Create New Vault",
-            PrimaryButtonText = "Create",
-            CloseButtonText = "Cancel",
-            DefaultButton = ContentDialogButton.Primary,
-            XamlRoot = this.XamlRoot,
-            Content = new StackPanel
-            {
-                Spacing = 8,
-                Children =
-                {
-                    new TextBlock { Text = $"Set a master password for '{System.IO.Path.GetFileName(vaultPath)}':", FontSize = 12 },
-                    passwordBox1,
-                    passwordBox2
-                }
-            }
-        };
-
-        var result = await dialog.ShowAsync();
-        if (result != ContentDialogResult.Primary)
-            return (false, string.Empty);
-
-        if (string.IsNullOrWhiteSpace(passwordBox1.Password))
-            return (false, string.Empty);
-
-        if (passwordBox1.Password != passwordBox2.Password)
-        {
-            var err = new ContentDialog
-            {
-                Title = "Password Mismatch",
-                Content = "The entered passwords do not match. Vault creation was cancelled.",
-                CloseButtonText = "OK",
-                XamlRoot = this.XamlRoot
-            };
-            await err.ShowAsync();
-            return (false, string.Empty);
-        }
-
-        return (true, passwordBox1.Password);
+        var folder = await picker.PickSingleFolderAsync();
+        return folder?.Path;
     }
 
     private async Task<bool> PromptRecoveryKeyConfirmationAsync(string[] recoveryWords)

@@ -9,117 +9,358 @@
     Background="Transparent">
 
     <Grid>
-        <!-- Centered Login Card -->
+        <!-- Centered Main Surface Card -->
         <Border HorizontalAlignment="Center" 
                 VerticalAlignment="Center" 
-                Width="460"
+                Width="500"
                 Style="{StaticResource ElevatedCardStyle}"
-                Padding="32">
-            <StackPanel Spacing="20">
-                <!-- Branding Header -->
+                Padding="32,28">
+            <StackPanel Spacing="18">
+
+                <!-- Header: App Icon & Brand Typography -->
                 <StackPanel HorizontalAlignment="Center" Spacing="6">
-                    <Border Background="#1E1B4B" 
-                            BorderBrush="#4338CA" 
-                            BorderThickness="1" 
-                            Width="54" 
-                            Height="54" 
-                            CornerRadius="27" 
-                            HorizontalAlignment="Center">
-                        <FontIcon Glyph="&#xE72E;" Foreground="{StaticResource AppAccentBrush}" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
+                    <Image Source="ms-appx:///Assets/AppIcon.png" 
+                           Width="68" 
+                           Height="68" 
+                           HorizontalAlignment="Center" 
+                           Margin="0,0,0,4" />
                     <TextBlock Text="SecureVault" 
                                FontSize="24" 
                                FontWeight="Bold" 
                                Foreground="{StaticResource TextPrimaryBrush}" 
                                HorizontalAlignment="Center" />
-                    <TextBlock Text="Zero-Knowledge Hardware-Grade Protection" 
+                    <TextBlock Text="Zero-Knowledge Hardware-Grade Encrypted Safe" 
                                FontSize="12" 
                                Foreground="{StaticResource TextSecondaryBrush}" 
                                HorizontalAlignment="Center" />
                 </StackPanel>
 
-                <!-- Vault File Selector -->
-                <StackPanel Spacing="6">
-                    <TextBlock Text="Vault File" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
-                    <Grid ColumnSpacing="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBox Text="{x:Bind ViewModel.VaultPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                 PlaceholderText="Select or enter .vault path" 
-                                 FontSize="13" 
-                                 AutomationProperties.Name="Vault Path" />
-                        <Button Grid.Column="1" 
-                                Command="{x:Bind ViewModel.BrowseVaultCommand}" 
-                                ToolTipService.ToolTip="Browse Vault File" 
-                                AutomationProperties.Name="Browse Vault">
-                            <FontIcon Glyph="&#xED25;" FontSize="14" />
-                        </Button>
-                    </Grid>
+                <!-- ================================================================= -->
+                <!-- VIEW 1: FIRST-TIME WELCOME & ONBOARDING                           -->
+                <!-- ================================================================= -->
+                <StackPanel Spacing="14" Visibility="{x:Bind ViewModel.IsWelcomeVisible, Mode=OneWay, Converter={StaticResource BoolToVisibleConverter}}">
+                    <TextBlock Text="Get Started" 
+                               FontSize="16" 
+                               FontWeight="SemiBold" 
+                               Foreground="{StaticResource TextPrimaryBrush}" 
+                               HorizontalAlignment="Center" 
+                               Margin="0,4,0,0" />
+                    <TextBlock Text="Choose how you would like to begin using your vault:" 
+                               FontSize="12" 
+                               Foreground="{StaticResource TextSecondaryBrush}" 
+                               HorizontalAlignment="Center" />
+
+                    <!-- Choice Card 1: Create New Vault -->
+                    <Button Command="{x:Bind ViewModel.GoToCreateWizardCommand}"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            Padding="16,14"
+                            CornerRadius="{StaticResource CardCornerRadius}"
+                            Background="#13131A"
+                            BorderBrush="#4338CA"
+                            BorderThickness="1.5">
+                        <Grid ColumnSpacing="14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Border Background="#1E1B4B" Width="44" Height="44" CornerRadius="22" VerticalAlignment="Center">
+                                <FontIcon Glyph="&#xE710;" Foreground="{StaticResource AppAccentBrush}" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="Create a Personal Vault" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Text="Choose a folder and set your master password." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="14" Foreground="{StaticResource TextTertiaryBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Button>
+
+                    <!-- Choice Card 2: Open Existing Vault -->
+                    <Button Command="{x:Bind ViewModel.BrowseVaultCommand}"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            Padding="16,14"
+                            CornerRadius="{StaticResource CardCornerRadius}"
+                            Background="#111116"
+                            BorderBrush="{StaticResource AppBorderBrush}"
+                            BorderThickness="1">
+                        <Grid ColumnSpacing="14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Border Background="#1E293B" Width="44" Height="44" CornerRadius="22" VerticalAlignment="Center">
+                                <FontIcon Glyph="&#xED25;" Foreground="{StaticResource FastModeBrush}" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="Open Existing Vault" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Text="Browse and select an existing .vault container file." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="14" Foreground="{StaticResource TextTertiaryBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Button>
+
+                    <!-- Restore from Backup Link -->
+                    <HyperlinkButton Content="Restore Vault from Backup Archive..." 
+                                     Command="{x:Bind ViewModel.OpenRestoreDialogCommand}" 
+                                     FontSize="12" 
+                                     HorizontalAlignment="Center" 
+                                     Margin="0,4,0,0" />
                 </StackPanel>
 
-                <!-- Mode 1: Password Unlock -->
-                <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.ShowRecoveryInput, Mode=OneWay, Converter={StaticResource BoolToCollapsedConverter}}">
+                <!-- ================================================================= -->
+                <!-- VIEW 2: RETURNING USER QUICK UNLOCK                               -->
+                <!-- ================================================================= -->
+                <StackPanel Spacing="14" Visibility="{x:Bind ViewModel.IsUnlockVisible, Mode=OneWay, Converter={StaticResource BoolToVisibleConverter}}">
+
+                    <!-- Active Vault Identity Pill -->
+                    <Border Background="#111116" 
+                            BorderBrush="{StaticResource AppBorderBrush}" 
+                            BorderThickness="1" 
+                            CornerRadius="{StaticResource CardCornerRadius}" 
+                            Padding="14,10">
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Border Background="#1E1B4B" Width="36" Height="36" CornerRadius="18" VerticalAlignment="Center">
+                                <FontIcon Glyph="&#xE8B7;" Foreground="{StaticResource AppAccentBrush}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{x:Bind ViewModel.VaultDisplayName, Mode=OneWay}" 
+                                           FontSize="14" 
+                                           FontWeight="Bold" 
+                                           Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Text="{x:Bind ViewModel.VaultDirectoryDisplay, Mode=OneWay}" 
+                                           FontSize="11" 
+                                           Foreground="{StaticResource TextTertiaryBrush}" 
+                                           TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <Button Grid.Column="2" 
+                                    Command="{x:Bind ViewModel.BrowseVaultCommand}" 
+                                    ToolTipService.ToolTip="Switch to a different vault" 
+                                    VerticalAlignment="Center"
+                                    Padding="8,5"
+                                    CornerRadius="{StaticResource ButtonCornerRadius}">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <FontIcon Glyph="&#xE8DE;" FontSize="12" />
+                                    <TextBlock Text="Switch" FontSize="11" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <!-- Master Password Field -->
                     <StackPanel Spacing="6">
-                        <TextBlock Text="Master Password" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <Grid>
+                            <TextBlock Text="Master Password" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <HyperlinkButton Content="Forgot Password?" 
+                                             Command="{x:Bind ViewModel.GoToRecoveryCommand}" 
+                                             FontSize="11" 
+                                             HorizontalAlignment="Right" 
+                                             Padding="0" />
+                        </Grid>
                         <PasswordBox x:Name="MasterPasswordBox" 
-                                     Password="{x:Bind ViewModel.Password, Mode=TwoWay}" 
-                                     PlaceholderText="Enter vault password" 
+                                     PlaceholderText="Enter master password to unlock" 
                                      FontSize="13" 
                                      PasswordRevealMode="Peek" 
+                                     KeyDown="MasterPasswordBox_KeyDown"
                                      AutomationProperties.Name="Master Password" />
                     </StackPanel>
 
+                    <!-- Password Hint Banner (if header contains hint) -->
+                    <Border Background="#1C1917" 
+                            BorderBrush="#78350F" 
+                            BorderThickness="1" 
+                            CornerRadius="{StaticResource BadgeCornerRadius}" 
+                            Padding="10,6" 
+                            Visibility="{x:Bind ViewModel.ShowPasswordHint, Mode=OneWay, Converter={StaticResource BoolToVisibleConverter}}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE9CE;" Foreground="{StaticResource WarningBrush}" FontSize="13" VerticalAlignment="Center" />
+                            <TextBlock Text="{x:Bind ViewModel.PasswordHint, Mode=OneWay}" 
+                                       Foreground="{StaticResource WarningBrush}" 
+                                       FontSize="11" 
+                                       VerticalAlignment="Center" 
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Primary Unlock Action -->
                     <Button Content="Unlock Vault" 
                             Command="{x:Bind ViewModel.UnlockCommand}" 
                             Style="{StaticResource AccentButtonStyle}" 
                             HorizontalAlignment="Stretch" 
-                            Height="38" 
+                            Height="40" 
+                            FontSize="14"
                             AutomationProperties.Name="Unlock Vault" />
 
-                    <Grid>
-                        <HyperlinkButton Content="Unlock with 24-word Recovery Key" 
-                                         Command="{x:Bind ViewModel.ToggleRecoveryModeCommand}" 
+                    <!-- Quick Secondary Links -->
+                    <Grid Margin="0,4,0,0">
+                        <HyperlinkButton Content="Unlock with Recovery Key" 
+                                         Command="{x:Bind ViewModel.GoToRecoveryCommand}" 
                                          FontSize="12" 
                                          HorizontalAlignment="Left" />
                         <HyperlinkButton Content="Create New Vault" 
-                                         Command="{x:Bind ViewModel.CreateVaultCommand}" 
+                                         Command="{x:Bind ViewModel.GoToCreateWizardCommand}" 
                                          FontSize="12" 
                                          HorizontalAlignment="Right" />
                     </Grid>
 
                     <HyperlinkButton Content="Restore Vault from Backup..." 
                                      Command="{x:Bind ViewModel.OpenRestoreDialogCommand}" 
-                                     FontSize="12" 
+                                     FontSize="11" 
                                      HorizontalAlignment="Center" />
                 </StackPanel>
 
-                <!-- Mode 2: Recovery Key Unlock -->
-                <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.ShowRecoveryInput, Mode=OneWay, Converter={StaticResource BoolToVisibleConverter}}">
-                    <StackPanel Spacing="6">
-                        <TextBlock Text="24-Word Recovery Phrase" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
-                        <TextBox Text="{x:Bind ViewModel.RecoveryWordsInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                 PlaceholderText="abandon ability able about ..." 
-                                 AcceptsReturn="True" 
-                                 TextWrapping="Wrap" 
-                                 Height="80" 
-                                 FontSize="12" 
-                                 FontFamily="Consolas, monospace" 
-                                 AutomationProperties.Name="Recovery Words" />
+                <!-- ================================================================= -->
+                <!-- VIEW 3: IN-PAGE VAULT CREATION WIZARD                             -->
+                <!-- ================================================================= -->
+                <StackPanel Spacing="14" Visibility="{x:Bind ViewModel.IsCreateWizardVisible, Mode=OneWay, Converter={StaticResource BoolToVisibleConverter}}">
+                    <Grid>
+                        <HyperlinkButton Command="{x:Bind ViewModel.CancelCreateWizardCommand}" 
+                                         HorizontalAlignment="Left" 
+                                         Padding="4,2">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <FontIcon Glyph="&#xE72B;" FontSize="12" />
+                                <TextBlock Text="Back" FontSize="12" />
+                            </StackPanel>
+                        </HyperlinkButton>
+                        <TextBlock Text="Create New Personal Vault" 
+                                   FontSize="15" 
+                                   FontWeight="SemiBold" 
+                                   Foreground="{StaticResource TextPrimaryBrush}" 
+                                   HorizontalAlignment="Center" 
+                                   VerticalAlignment="Center" />
+                    </Grid>
+
+                    <!-- Vault Name & Folder -->
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="130" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Vault Name" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBox Text="{x:Bind ViewModel.NewVaultName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                     PlaceholderText="Personal" 
+                                     FontSize="13" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Text="Storage Folder" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <Grid ColumnSpacing="6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="{x:Bind ViewModel.NewVaultFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                         FontSize="12" 
+                                         PlaceholderText="Folder path" />
+                                <Button Grid.Column="1" 
+                                        Command="{x:Bind ViewModel.BrowseNewVaultFolderCommand}" 
+                                        ToolTipService.ToolTip="Browse Folder" 
+                                        Padding="8,6">
+                                    <FontIcon Glyph="&#xED25;" FontSize="13" />
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Location Path Preview -->
+                    <TextBlock Text="{x:Bind ViewModel.NewVaultComputedPath, Mode=OneWay}" 
+                               FontSize="11" 
+                               Foreground="{StaticResource TextTertiaryBrush}" 
+                               TextTrimming="CharacterEllipsis" 
+                               Margin="0,-6,0,0" />
+
+                    <!-- Passwords -->
+                    <StackPanel Spacing="8">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Master Password" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <PasswordBox x:Name="NewVaultPasswordBox" 
+                                         PlaceholderText="Enter master password (minimum 8 characters)" 
+                                         FontSize="13" 
+                                         PasswordRevealMode="Peek" />
+                        </StackPanel>
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Confirm Master Password" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <PasswordBox x:Name="NewVaultPasswordConfirmBox" 
+                                         PlaceholderText="Re-enter master password" 
+                                         FontSize="13" 
+                                         PasswordRevealMode="Peek" 
+                                         KeyDown="NewVaultPasswordConfirmBox_KeyDown" />
+                        </StackPanel>
                     </StackPanel>
+
+                    <!-- Optional Password Hint -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Optional Password Hint" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBox Text="{x:Bind ViewModel.NewVaultHint, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                 PlaceholderText="e.g. Favorite book title (never put the password itself)" 
+                                 FontSize="12" />
+                    </StackPanel>
+
+                    <!-- Create Action Button -->
+                    <Button Content="Create Vault &amp; Generate Recovery Key" 
+                            Command="{x:Bind ViewModel.CreateVaultInPageCommand}" 
+                            Style="{StaticResource AccentButtonStyle}" 
+                            HorizontalAlignment="Stretch" 
+                            Height="40" 
+                            FontSize="13" />
+                </StackPanel>
+
+                <!-- ================================================================= -->
+                <!-- VIEW 4: RECOVERY KEY UNLOCK                                       -->
+                <!-- ================================================================= -->
+                <StackPanel Spacing="14" Visibility="{x:Bind ViewModel.IsRecoveryVisible, Mode=OneWay, Converter={StaticResource BoolToVisibleConverter}}">
+                    <Grid>
+                        <HyperlinkButton Command="{x:Bind ViewModel.GoToUnlockCommand}" 
+                                         HorizontalAlignment="Left" 
+                                         Padding="4,2">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <FontIcon Glyph="&#xE72B;" FontSize="12" />
+                                <TextBlock Text="Back" FontSize="12" />
+                            </StackPanel>
+                        </HyperlinkButton>
+                        <TextBlock Text="Recovery Key Unlock" 
+                                   FontSize="15" 
+                                   FontWeight="SemiBold" 
+                                   Foreground="{StaticResource TextPrimaryBrush}" 
+                                   HorizontalAlignment="Center" 
+                                   VerticalAlignment="Center" />
+                    </Grid>
+
+                    <TextBlock Text="Enter the 24-word recovery phrase generated when your vault was created:" 
+                               FontSize="12" 
+                               Foreground="{StaticResource TextSecondaryBrush}" 
+                               TextWrapping="Wrap" />
+
+                    <TextBox Text="{x:Bind ViewModel.RecoveryWordsInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                             PlaceholderText="abandon ability able about act action..." 
+                             AcceptsReturn="True" 
+                             TextWrapping="Wrap" 
+                             Height="90" 
+                             FontSize="12" 
+                             FontFamily="Consolas, monospace" />
 
                     <Button Content="Unlock via Recovery Key" 
                             Command="{x:Bind ViewModel.UnlockWithRecoveryCommand}" 
                             Style="{StaticResource AccentButtonStyle}" 
                             HorizontalAlignment="Stretch" 
-                            Height="38" />
+                            Height="40" />
 
-                    <HyperlinkButton Content="Back to Password Unlock" 
-                                     Command="{x:Bind ViewModel.ToggleRecoveryModeCommand}" 
+                    <HyperlinkButton Content="Return to Master Password Unlock" 
+                                     Command="{x:Bind ViewModel.GoToUnlockCommand}" 
                                      FontSize="12" 
                                      HorizontalAlignment="Center" />
                 </StackPanel>
+
+                <!-- ================================================================= -->
+                <!-- SHARED STATUS & ERROR FEEDBACK                                    -->
+                <!-- ================================================================= -->
 
                 <!-- Progress Ring on Busy -->
                 <StackPanel Orientation="Horizontal" 
@@ -127,7 +368,10 @@
                             HorizontalAlignment="Center" 
                             Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BoolToVisibleConverter}}">
                     <ProgressRing IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" Width="20" Height="20" />
-                    <TextBlock Text="{x:Bind ViewModel.BusyMessage, Mode=OneWay}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="{x:Bind ViewModel.BusyMessage, Mode=OneWay}" 
+                               FontSize="12" 
+                               Foreground="{StaticResource TextSecondaryBrush}" 
+                               VerticalAlignment="Center" />
                 </StackPanel>
 
                 <!-- Brute Force Lockout Banner (M11) -->

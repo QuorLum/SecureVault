@@ -1,12 +1,12 @@
 # SecureVault — Project Progress
 
-## Current State: Single-File Packaging & Professional GitHub Organization Complete (All 123 Tests Passing)
-- **Current Milestone:** Single-File Packaging & Professional GitHub Organization — **COMPLETE**
-- **Branch:** `chore/github-organization-and-packaging`
+## Current State: First-Run Onboarding, In-Page Vault Creation & Taskbar Icon Overhaul Complete (All 130 Tests Passing)
+- **Current Milestone:** First-Run Onboarding, In-Page Vault Creation & Taskbar Icon Overhaul — **COMPLETE**
+- **Branch:** `feat/onboarding-ux-and-vault-creation`
 - **Environment:** Isolated .NET 8 SDK (8.0.424) in `$env:USERPROFILE\.dotnet`
 - **Activation:** Run `. .\activate.ps1` in PowerShell to set `DOTNET_ROOT` and `PATH`
-- **Test Results:** 123 / 123 Passed (100% success rate)
-- **Single-File Binary:** `publish/SecureVault.exe` (376.92 MB, self-contained single file, launched and verified responding)
+- **Test Results:** 130 / 130 Passed (100% success rate across all unit, integration, and onboarding workflow tests)
+- **Single-File Binary:** `publish/SecureVault.exe` (447.6 MB self-contained single-file executable, verified responding)
 
 ---
 
@@ -314,4 +314,33 @@
 - [x] **Test Suite Verification:**
   - All 123 / 123 unit, integration, and concurrency tests passing.
   - Solution builds with 0 errors and 0 warnings.
+
+---
+
+### First-Run Onboarding, In-Page Vault Creation & Taskbar Icon Overhaul
+- [x] **Root Cause Analysis of Creation Failure & 0-Byte Orphan Files:**
+  - Diagnosed that `FileSavePicker` created 0-byte `.vault` files immediately upon path selection before gathering passwords.
+  - Subsequent modal `ContentDialog` calls in unpackaged WinUI 3 were prone to dismissal or thread stalls, abandoning the empty container. Reopening the 0-byte file led to fatal `CorruptedVaultException: Container file is too small to contain valid header`.
+- [x] **In-Page Creation Wizard (`LoginPage.xaml` & `LoginViewModel.cs`):**
+  - Replaced external modal dialogs with a smooth in-page wizard.
+  - Collects Vault Name (defaulting to "Personal"), Target Directory (defaulting to `Documents\SecureVault`), Master Password (>= 8 chars), Password Confirmation, and optional header Hint.
+  - Uses non-destructive WinUI `FolderPicker` that never touches or creates premature files on disk.
+  - Direct atomic creation via `VaultManager.CreateAsync` with automated cleanup if recovery verification is aborted.
+- [x] **First-Time vs. Returning User State Intelligence:**
+  - Built `AppSettingsService` (`src/SecureVault.Core/IO/AppSettingsService.cs`) managing `%LOCALAPPDATA%\SecureVault\config.json` with `AtomicWriter` crash resistance.
+  - First-time launch presents a clean Welcome view with dual action cards: "Create a Personal Vault" and "Open Existing Vault".
+  - Subsequent launches automatically recognize the last active vault and display the Quick Unlock view with vault name badge, auto-focused password field, and Enter key submission.
+  - Prominent options to switch vault, enter 24-word recovery mode, or create another vault.
+- [x] **High-Resolution Branding & Taskbar Icon Binding:**
+  - Generated premium obsidian-and-indigo metallic shield emblem with glowing violet neon contours and centered vault mechanism.
+  - Authored multi-size Windows icon `AppIcon.ico` (16, 24, 32, 48, 64, 128, 256px) and high-res `AppIcon.png`.
+  - Bound taskbar and window icons using absolute paths in `AppWindow.SetIcon` and native Win32 `WM_SETICON` (`ICON_BIG` and `ICON_SMALL`).
+  - Set `TitleBar.Title` and Win32 window text to `"SecureVault"`.
+- [x] **Automated Test Suite Expansion:**
+  - Added `AppSettingsServiceTests.cs` (initial state, FIFO deduplication, persistence, corruption recovery).
+  - Added `OnboardingWorkflowTests.cs` (end-to-end first-time creation, password hint reading, returning user unlock, and abort cleanup hygiene).
+  - Total test suite expanded to **130 / 130 tests passing (100% success rate)**.
+- [x] **Single-File Packaging Verification:**
+  - Verified `scripts/publish-single-file.ps1` publishes `publish/SecureVault.exe` (447.6 MB) and `publish/SecureVault-v1.0.0-win-x64.zip` (191.4 MB).
+  - Validated process execution, HWND allocation, and responsive WinUI message pump.
 
