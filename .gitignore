@@ -24,8 +24,12 @@ packages/
 *.vault.lock
 *.vault.sha256
 
-# Cache
+# Cache and temporary files
 AppData/
+cache/
+scratch/
+*.lock
+*.tmp
 
 # Isolated environment & test results
 .dotnet/
@@ -37,3 +41,4 @@ TestResults/
 *.key
 *.pem
 *.secret
+

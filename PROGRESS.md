@@ -251,7 +251,26 @@
 - **All Phases 1–6:** **100% COMPLETE**
 - **Branch:** `phase-6/polish`
 - **Environment:** Isolated .NET 8 SDK (8.0.424) in `$env:USERPROFILE\.dotnet`
-- **Total Unit Tests Passing:** 120 / 120
+- **Total Unit Tests Passing:** 123 / 123
 - **Total Build Status:** 0 errors, 0 warnings across all projects on x64.
+
+---
+
+## Audit Findings (Phase 6 Polish Audit)
+- **Task:** Verification of chunk reference counting, Copy/Replace/Compaction interaction tests, backup chain-awareness, and stream serialization.
+- **Completed Steps:**
+  - Audited `FileManagementOperations.cs`, `VaultIndex.cs`, `ChunkIndex.cs`, `FileDeleteOperation.cs`, `FileReplaceOperation.cs`, `VaultCompaction.cs`. Confirmed no chunk reference-counting mechanism exists.
+  - Implemented interaction test suite `InteractionAuditTests.cs` covering Copy -> Replace File A -> Read File B and Copy -> Compact -> Read File B.
+  - Diagnosed stream position collision in `FileAddOperation.cs`: when `sourceStream` is `VaultFileStream`, chunk reads seek `_vaultStream` to existing chunks, causing subsequent writes without position restoration to overwrite data on disk.
+  - Fixed `FileAddOperation.cs` to track and restore `currentWriteOffset` on `_vaultStream` before every chunk write and footer write.
+  - Confirmed `VaultManager._stream` access was previously unserialized between foreground operations and background workers (`BackgroundRepairService`).
+  - Added `SemaphoreSlim _streamLock = new(1, 1)` to `VaultManager`, serializing `AddFileAsync`, `DeleteFile`, `StreamLength`, `Dispose()`, `FileReplaceOperation`, `VaultCompaction`, and `ChunkReader.ReadChunk()`.
+  - In `AddFileAsync` and `FileReplaceOperation`, added same-vault stream detection that spools `VaultFileStream` before acquiring `_streamLock` to eliminate any lock inversion or stream collision.
+  - Implemented `ConcurrentAccessTests.cs` executing concurrent foreground operations (Copy, Add, Replace, Read, Delete) while `BackgroundRepairService` actively scans chunks in the background. Added in-loop assertions and elapsed time logging per worker task. Verified execution duration ~3.47 seconds with 4 background scans completed concurrently and 100% health score.
+  - Audited all 5 `ChunkReader` construction sites across the codebase: confirmed both container stream production sites pass the shared `_streamLock` / `part.StreamLock`, and the remaining 3 are isolated unit tests on in-memory streams.
+  - Audited `VaultCompaction.cs` chunk read path: verified `CopyChunkBytes` reads directly from raw `Stream` byte ranges without invoking `ChunkReader`, ensuring internal chunk reads are completely lock-free and cannot deadlock on re-entry against `vault.StreamLock`.
+  - Audited UI callers for Backup: confirmed `MainLibraryViewModel` / `ToolbarControl.xaml` -> `BackupRestoreDialog.xaml` -> `BackupRestoreViewModel.CreateBackupAsync` calls `BackupService.BackupChainAsync` and `SplitBackupService.BackupSplitChainAsync`.
+  - Re-ran test suite: all 123 tests passed (123/123).
+
 
 

@@ -34,36 +34,63 @@ public sealed class FileReplaceOperation
         if (entry == null)
             throw new KeyNotFoundException($"File with GUID '{fileGuid}' was not found in vault.");
 
-        // Seek past existing files to append new file block (before primary index)
-        ulong appendOffset = _vault.Header.PrimaryIndexOffset > 0 ? _vault.Header.PrimaryIndexOffset : (ulong)_vault.StreamLength;
-        _vault.Stream.Seek((long)appendOffset, SeekOrigin.Begin);
+        Stream effectiveStream = sourceStream;
+        IDisposable? cleanup = null;
 
-        var addOp = new FileAddOperation(_vault.Stream, _vault.Encryption, _vault.RsCodec);
-        var newFileRecord = await addOp.ExecuteAsync(
-            sourceStream,
-            entry.FileName,
-            entry.VirtualFolderPath,
-            entry.ProtectionMode,
-            progress,
-            ct);
+        try
+        {
+            if (sourceStream is IO.VaultFileStream vfs && ReferenceEquals(vfs.UnderlyingStream, _vault.Stream))
+            {
+                var mem = new MemoryStream();
+                await sourceStream.CopyToAsync(mem, ct);
+                mem.Seek(0, SeekOrigin.Begin);
+                effectiveStream = mem;
+                cleanup = mem;
+            }
 
-        // Atomically transfer new chunks, size, salt, and hashes into existing entry
-        entry.OriginalSize = newFileRecord.OriginalSize;
-        entry.CompressedSize = newFileRecord.CompressedSize;
-        entry.PlaintextSHA256 = newFileRecord.PlaintextSHA256;
-        entry.FileSalt = newFileRecord.FileSalt;
-        entry.ChunkCount = newFileRecord.ChunkCount;
-        entry.FirstChunkOffset = newFileRecord.FirstChunkOffset;
-        entry.Chunks = newFileRecord.Chunks;
-        entry.DateModifiedTicks = DateTime.UtcNow.Ticks;
+            await _vault.StreamLock.WaitAsync(ct);
+            try
+            {
+                // Seek past existing files to append new file block (before primary index)
+                ulong appendOffset = _vault.Header.PrimaryIndexOffset > 0 ? _vault.Header.PrimaryIndexOffset : (ulong)_vault.StreamLength;
+                _vault.Stream.Seek((long)appendOffset, SeekOrigin.Begin);
 
-        // Remove the temporary entry added to _vault.Index by FileAddOperation if it was added
-        _vault.Index.Entries.Remove(newFileRecord);
+                var addOp = new FileAddOperation(_vault.Stream, _vault.Encryption, _vault.RsCodec);
+                var newFileRecord = await addOp.ExecuteAsync(
+                    effectiveStream,
+                    entry.FileName,
+                    entry.VirtualFolderPath,
+                    entry.ProtectionMode,
+                    progress,
+                    ct);
 
-        // Update primary index pointer and save
-        _vault.Header.PrimaryIndexOffset = (ulong)_vault.Stream.Position;
-        _vault.PersistIndexAndFooter();
+                // Atomically transfer new chunks, size, salt, and hashes into existing entry
+                entry.OriginalSize = newFileRecord.OriginalSize;
+                entry.CompressedSize = newFileRecord.CompressedSize;
+                entry.PlaintextSHA256 = newFileRecord.PlaintextSHA256;
+                entry.FileSalt = newFileRecord.FileSalt;
+                entry.ChunkCount = newFileRecord.ChunkCount;
+                entry.FirstChunkOffset = newFileRecord.FirstChunkOffset;
+                entry.Chunks = newFileRecord.Chunks;
+                entry.DateModifiedTicks = DateTime.UtcNow.Ticks;
 
-        return entry;
+                // Remove the temporary entry added to _vault.Index by FileAddOperation if it was added
+                _vault.Index.Entries.Remove(newFileRecord);
+
+                // Update primary index pointer and save
+                _vault.Header.PrimaryIndexOffset = (ulong)_vault.Stream.Position;
+                _vault.PersistIndexAndFooter();
+
+                return entry;
+            }
+            finally
+            {
+                _vault.StreamLock.Release();
+            }
+        }
+        finally
+        {
+            cleanup?.Dispose();
+        }
     }
 }

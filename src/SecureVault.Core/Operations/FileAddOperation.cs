@@ -47,6 +47,7 @@ public sealed class FileAddOperation
         await _vaultStream.WriteAsync(headerPlaceholder, cancellationToken);
 
         ulong firstChunkOffset = (ulong)_vaultStream.Position;
+        long currentWriteOffset = _vaultStream.Position;
         var chunkWriter = new ChunkWriter(_vaultStream, _encryption.SecureModeKey, _encryption.ObfuscationKey, _rsCodec, mode);
         var chunkEntries = new List<ChunkIndexEntry>();
 
@@ -71,12 +72,16 @@ public sealed class FileAddOperation
             sha256.AppendData(buffer, 0, bytesRead);
             totalBytesRead += (ulong)bytesRead;
 
+            // Restore write position in case sourceStream reading sought within the same vault stream (e.g. CopyAsync)
+            _vaultStream.Seek(currentWriteOffset, SeekOrigin.Begin);
+
             var chunkEntry = chunkWriter.WriteChunk(
                 buffer.AsSpan(0, bytesRead),
                 chunkSequence,
                 fileGuid,
                 fileSalt);
 
+            currentWriteOffset = _vaultStream.Position;
             chunkEntries.Add(chunkEntry);
             chunkSequence++;
 
@@ -94,6 +99,7 @@ public sealed class FileAddOperation
             FileGuid = fileGuid,
             BlockSHA256 = plaintextSha256 // Block hash verification
         };
+        _vaultStream.Seek(currentWriteOffset, SeekOrigin.Begin);
         footer.WriteTo(_vaultStream);
 
         long blockEndOffset = _vaultStream.Position;

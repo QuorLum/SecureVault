@@ -17,6 +17,15 @@
             <TextBlock Text="Compaction defragments chunk storage on disk, reclaims orphaned space left by deleted or replaced files, and updates vault indices with two-phase rollback safety."
                        TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
 
+            <!-- Multi-Part Chain Disclaimer Notice -->
+            <Border Background="#1C1917" BorderBrush="#78350F" BorderThickness="1" CornerRadius="6" Padding="10">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xE7BA;" FontSize="14" Foreground="#F59E0B" VerticalAlignment="Center" />
+                    <TextBlock Text="Notice: Compaction of vault chains over 200GB (multiple .vault files) is newer and less tested. Consider backing up before compacting a multi-part vault."
+                               TextWrapping="Wrap" FontSize="11" Foreground="#FDE68A" />
+                </StackPanel>
+            </Border>
+
             <!-- Storage Analysis Card -->
             <Border Background="#141417" CornerRadius="8" Padding="16" BorderBrush="#27272A" BorderThickness="1">
                 <StackPanel Spacing="12">

@@ -15,6 +15,7 @@ public sealed class SecondaryVaultPart : IDisposable
     public FileStream Stream { get; internal set; }
     public SecondaryVaultHeader Header { get; internal set; }
     public VaultIndex LocalIndex { get; }
+    public SemaphoreSlim StreamLock { get; } = new(1, 1);
 
     public SecondaryVaultPart(
         int partIndex,
@@ -37,6 +38,7 @@ public sealed class SecondaryVaultPart : IDisposable
         try { Stream.Flush(flushToDisk: true); } catch { }
         Stream.Dispose();
         FileLock.Dispose();
+        StreamLock.Dispose();
     }
 }
 
@@ -361,7 +363,7 @@ public sealed class VaultChainManager : IDisposable
                 $"Vault part {entry.PartIndex} ('{missingName}') is missing. Re-attach the vault part to access '{entry.FileName}'.");
         }
 
-        var reader = new ChunkReader(part.Stream, _masterVault.Encryption.SecureModeKey, _masterVault.Encryption.ObfuscationKey, _masterVault.RsCodec);
+        var reader = new ChunkReader(part.Stream, _masterVault.Encryption.SecureModeKey, _masterVault.Encryption.ObfuscationKey, _masterVault.RsCodec, part.StreamLock);
         return new VaultFileStream(entry, reader);
     }
 

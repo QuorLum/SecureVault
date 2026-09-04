@@ -16,17 +16,22 @@ public sealed class ChunkReader
     private readonly SecureBuffer _secureModeKey;
     private readonly SecureBuffer _obfuscationKey;
     private readonly ReedSolomonCodec _rsCodec;
+    private readonly SemaphoreSlim? _streamLock;
+
+    internal Stream UnderlyingStream => _stream;
 
     public ChunkReader(
         Stream vaultStream,
         SecureBuffer secureModeKey,
         SecureBuffer obfuscationKey,
-        ReedSolomonCodec rsCodec)
+        ReedSolomonCodec rsCodec,
+        SemaphoreSlim? streamLock = null)
     {
         _stream = vaultStream ?? throw new ArgumentNullException(nameof(vaultStream));
         _secureModeKey = secureModeKey ?? throw new ArgumentNullException(nameof(secureModeKey));
         _obfuscationKey = obfuscationKey ?? throw new ArgumentNullException(nameof(obfuscationKey));
         _rsCodec = rsCodec ?? throw new ArgumentNullException(nameof(rsCodec));
+        _streamLock = streamLock;
     }
 
     public byte[] ReadChunk(
@@ -36,7 +41,10 @@ public sealed class ChunkReader
     {
         ArgumentNullException.ThrowIfNull(entry);
 
-        _stream.Seek((long)entry.AbsoluteOffset, SeekOrigin.Begin);
+        _streamLock?.Wait();
+        try
+        {
+            _stream.Seek((long)entry.AbsoluteOffset, SeekOrigin.Begin);
 
         byte[] header = new byte[VaultConstants.ChunkHeaderSize];
         int headerRead = _stream.ReadAtLeast(header, VaultConstants.ChunkHeaderSize, throwOnEndOfStream: false);
@@ -128,4 +136,9 @@ public sealed class ChunkReader
 
         return plaintext;
     }
+    finally
+    {
+        _streamLock?.Release();
+    }
+}
 }

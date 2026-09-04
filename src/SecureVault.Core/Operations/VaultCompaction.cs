@@ -33,8 +33,11 @@ public static class VaultCompaction
     {
         ArgumentNullException.ThrowIfNull(vault);
 
-        return await Task.Run(() =>
+        await vault.StreamLock.WaitAsync(ct);
+        try
         {
+            return await Task.Run(() =>
+            {
             string vaultPath = vault.VaultPath;
             long oldSize = new FileInfo(vaultPath).Length;
 
@@ -189,6 +192,11 @@ public static class VaultCompaction
                 LiveFilesCount = liveEntries.Count
             };
         }, ct);
+        }
+        finally
+        {
+            vault.StreamLock.Release();
+        }
     }
 
     /// <summary>
@@ -251,8 +259,11 @@ public static class VaultCompaction
             throw new ArgumentException($"Secondary part {partIndex} not found in chain.");
         }
 
-        return await Task.Run(() =>
+        await part.StreamLock.WaitAsync(ct);
+        try
         {
+            return await Task.Run(() =>
+            {
             string partPath = part.FilePath;
             long oldSize = new FileInfo(partPath).Length;
             CheckDiskSpace(partPath, oldSize);
@@ -392,7 +403,15 @@ public static class VaultCompaction
                     }
                 }
             }
-            chain.MasterVault.PersistIndexAndFooter();
+            chain.MasterVault.StreamLock.Wait(ct);
+            try
+            {
+                chain.MasterVault.PersistIndexAndFooter();
+            }
+            finally
+            {
+                chain.MasterVault.StreamLock.Release();
+            }
 
             // Verification
             VerifyCompactedSecondaryPart(tempPath, chain.MasterVault.MasterKey, liveEntries);
@@ -423,6 +442,11 @@ public static class VaultCompaction
                 LiveFilesCount = liveEntries.Count
             };
         }, ct);
+        }
+        finally
+        {
+            part.StreamLock.Release();
+        }
     }
 
     private static void CopyChunkBytes(Stream src, Stream dest, ChunkIndexEntry chunk)

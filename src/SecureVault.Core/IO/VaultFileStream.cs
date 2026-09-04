@@ -21,6 +21,8 @@ public sealed class VaultFileStream : Stream
         _chunkReader = chunkReader ?? throw new ArgumentNullException(nameof(chunkReader));
     }
 
+    internal Stream UnderlyingStream => _chunkReader.UnderlyingStream;
+
     public override bool CanRead => !_disposed;
     public override bool CanSeek => !_disposed;
     public override bool CanWrite => false;

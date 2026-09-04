@@ -16,6 +16,7 @@ public sealed class VaultManager : IDisposable
     private readonly string _vaultPath;
     private readonly VaultFileLock _fileLock;
     private FileStream _stream;
+    private readonly SemaphoreSlim _streamLock = new(1, 1);
     private readonly SecureBuffer _masterKey;
     private readonly EncryptionService _encryption;
     private readonly ReedSolomonCodec _rsCodec;
@@ -27,7 +28,21 @@ public sealed class VaultManager : IDisposable
     public Guid VaultUUID => _header.VaultUUID;
     public IReadOnlyList<IndexEntry> Files => _index.Entries.Where(e => !e.IsDeleted).ToList();
     public bool IsLocked => _disposed;
-    public long StreamLength => _stream.Length;
+    public long StreamLength
+    {
+        get
+        {
+            _streamLock.Wait();
+            try
+            {
+                return _stream.Length;
+            }
+            finally
+            {
+                _streamLock.Release();
+            }
+        }
+    }
 
     internal SecureBuffer MasterKey => _masterKey;
     internal EncryptionService Encryption => _encryption;
@@ -35,6 +50,7 @@ public sealed class VaultManager : IDisposable
     internal VaultHeader Header => _header;
     internal VaultIndex Index => _index;
     internal FileStream Stream => _stream;
+    internal SemaphoreSlim StreamLock => _streamLock;
     internal void PersistIndexAndFooter() => SaveIndexAndFooter();
 
     internal void UpdateStreamAfterCompaction(FileStream newStream, VaultHeader newHeader)
@@ -314,19 +330,60 @@ public sealed class VaultManager : IDisposable
         CancellationToken cancellationToken = default)
     {
         EnsureUnlocked();
+        ArgumentNullException.ThrowIfNull(sourceStream);
 
-        // Seek past existing files to append new file block (before primary index)
-        ulong appendOffset = _header.PrimaryIndexOffset > 0 ? _header.PrimaryIndexOffset : (ulong)_stream.Length;
-        _stream.Seek((long)appendOffset, SeekOrigin.Begin);
+        Stream effectiveStream = sourceStream;
+        IDisposable? cleanup = null;
 
-        var operation = new FileAddOperation(_stream, _encryption, _rsCodec);
-        var entry = await operation.ExecuteAsync(sourceStream, fileName, virtualPath, mode, progress, cancellationToken);
+        try
+        {
+            // If sourceStream reads from this exact vault container stream (e.g. during CopyAsync),
+            // spool it first before acquiring the stream write lock to prevent stream position collision or lock inversion.
+            if (sourceStream is VaultFileStream vfs && ReferenceEquals(vfs.UnderlyingStream, _stream))
+            {
+                if (sourceStream.CanSeek && sourceStream.Length > 32 * 1024 * 1024)
+                {
+                    var secureTemp = new SecureVault.Core.Security.SecureTempFile();
+                    await sourceStream.CopyToAsync(secureTemp.Stream, cancellationToken);
+                    secureTemp.Stream.Seek(0, SeekOrigin.Begin);
+                    effectiveStream = secureTemp.Stream;
+                    cleanup = secureTemp;
+                }
+                else
+                {
+                    var mem = new MemoryStream();
+                    await sourceStream.CopyToAsync(mem, cancellationToken);
+                    mem.Seek(0, SeekOrigin.Begin);
+                    effectiveStream = mem;
+                    cleanup = mem;
+                }
+            }
 
-        _index.Entries.Add(entry);
-        _header.PrimaryIndexOffset = (ulong)_stream.Position;
-        SaveIndexAndFooter();
+            await _streamLock.WaitAsync(cancellationToken);
+            try
+            {
+                // Seek past existing files to append new file block (before primary index)
+                ulong appendOffset = _header.PrimaryIndexOffset > 0 ? _header.PrimaryIndexOffset : (ulong)_stream.Length;
+                _stream.Seek((long)appendOffset, SeekOrigin.Begin);
 
-        return entry;
+                var operation = new FileAddOperation(_stream, _encryption, _rsCodec);
+                var entry = await operation.ExecuteAsync(effectiveStream, fileName, virtualPath, mode, progress, cancellationToken);
+
+                _index.Entries.Add(entry);
+                _header.PrimaryIndexOffset = (ulong)_stream.Position;
+                SaveIndexAndFooter();
+
+                return entry;
+            }
+            finally
+            {
+                _streamLock.Release();
+            }
+        }
+        finally
+        {
+            cleanup?.Dispose();
+        }
     }
 
     /// <summary>
@@ -337,7 +394,7 @@ public sealed class VaultManager : IDisposable
         EnsureUnlocked();
         ArgumentNullException.ThrowIfNull(entry);
 
-        var reader = new ChunkReader(_stream, _encryption.SecureModeKey, _encryption.ObfuscationKey, _rsCodec);
+        var reader = new ChunkReader(_stream, _encryption.SecureModeKey, _encryption.ObfuscationKey, _rsCodec, _streamLock);
         return new VaultFileStream(entry, reader);
     }
 
@@ -359,13 +416,21 @@ public sealed class VaultManager : IDisposable
     {
         EnsureUnlocked();
 
-        bool removed = FileDeleteOperation.Execute(_index, fileGuid);
-        if (removed)
+        _streamLock.Wait();
+        try
         {
-            SaveIndexAndFooter();
-        }
+            bool removed = FileDeleteOperation.Execute(_index, fileGuid);
+            if (removed)
+            {
+                SaveIndexAndFooter();
+            }
 
-        return removed;
+            return removed;
+        }
+        finally
+        {
+            _streamLock.Release();
+        }
     }
 
     private void SaveIndexAndFooter()
@@ -418,17 +483,28 @@ public sealed class VaultManager : IDisposable
         if (_disposed)
             return;
 
+        _streamLock.Wait();
         try
         {
-            _stream.Flush(flushToDisk: true);
+            if (_disposed) return;
+
+            try
+            {
+                _stream.Flush(flushToDisk: true);
+            }
+            catch { }
+
+            _encryption.Dispose();
+            _masterKey.Dispose();
+            _stream.Dispose();
+            _fileLock.Dispose();
+
+            _disposed = true;
         }
-        catch { }
-
-        _encryption.Dispose();
-        _masterKey.Dispose();
-        _stream.Dispose();
-        _fileLock.Dispose();
-
-        _disposed = true;
+        finally
+        {
+            _streamLock.Release();
+            _streamLock.Dispose();
+        }
     }
 }
