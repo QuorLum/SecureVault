@@ -37,6 +37,7 @@ cache/
 scratch/
 *.lock
 *.tmp
+*.log
 
 # Isolated environment & test results
 .dotnet/
