@@ -271,6 +271,16 @@
   - Audited `VaultCompaction.cs` chunk read path: verified `CopyChunkBytes` reads directly from raw `Stream` byte ranges without invoking `ChunkReader`, ensuring internal chunk reads are completely lock-free and cannot deadlock on re-entry against `vault.StreamLock`.
   - Audited UI callers for Backup: confirmed `MainLibraryViewModel` / `ToolbarControl.xaml` -> `BackupRestoreDialog.xaml` -> `BackupRestoreViewModel.CreateBackupAsync` calls `BackupService.BackupChainAsync` and `SplitBackupService.BackupSplitChainAsync`.
   - Re-ran test suite: all 123 tests passed (123/123).
+  - Release Preparation v1.0.0:
+    - Added multi-part chain compaction disclaimer in `CompactionDialog.xaml` and `README.md`.
+    - Generated official brand logo in `assets/logo.png` and embedded in `README.md`.
+    - Finalized `README.md` with threat model, architecture, dependencies (LibVLC LGPL dynamic linking note), and known limitations.
+    - Created `CONTRIBUTING.md` with non-negotiable test vector diff rule for `Crypto/`, `Format/`, `Integrity/`.
+    - Created standard `LICENSE` (MIT).
+    - Executed clean-clone sanity check in fresh directory following only README instructions: 123/123 tests passed (12s duration), solution built with 0 warnings and 0 errors.
+    - Conducted full repo secrets and absolute path sweep; updated `.gitignore` with `cache/`, `*.lock`, `scratch/`.
+    - Merged `phase-6/polish` into `main`, tagged `v1.0.0`, pushed `main` and `v1.0.0` tag to GitHub, and set repository visibility to public.
+
 
 
 
