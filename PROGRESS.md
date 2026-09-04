@@ -189,11 +189,69 @@
 
 ---
 
-## Current State: Phase 5 Complete (All 110 Tests Passing, Solution Builds with 0 Errors)
-- **Current Milestone:** Phase 5: Backup & Multi-Vault Chain — **COMPLETE**
-- **Next Milestone:** Phase 6: Polish & Hardening
-- **Branch:** `phase-5/backup-multivault`
+### Phase 6: Polish, Hardening & Production Release (All 120 Tests Passing, Solution Builds with 0 Errors)
+- [x] **File Replace Operation (C20):**
+  - In-place file content replacement generating fresh salts and 12-byte random nonces per chunk.
+  - Updates sizes, modified timestamps, plaintext SHA-256, and chunk pointers in vault index.
+  - Leaves orphaned chunks safely for defragmentation/compaction.
+- [x] **Duplicate File Detector (C21):**
+  - Scans active files grouped by plaintext SHA-256 checksum.
+  - Accurately differentiates between redundant physical copies that waste disk space and CoW chunk-shared copies consuming zero extra bytes.
+- [x] **Chain-Aware Vault Compaction (C23):**
+  - Defragments physical chunk storage and reclaims orphaned bytes from deleted and replaced files.
+  - Pre-flight verification requiring $\ge 2\times$ free disk space on the container volume.
+  - Global chunk reference mapping across non-deleted entries preserving CoW shared chunks.
+  - Multi-vault chain awareness: compactor builds offset translation tables (`oldOffset -> newOffset`), updating secondary local indices and synchronizing the master Global Index entries.
+  - Atomic two-phase commit swap with `.pre-compact` backup and automatic rollback recovery.
+- [x] **Cryptographic Repair & Audit Logger (F03):**
+  - Thread-safe repair event logger asserting post-repair cryptographic re-verification.
+  - Enforces the strict rule: only commit repairs if AES-GCM AuthTag or CRC32 re-verification passes.
+- [x] **Disaster Recovery Container Scanner (F10):**
+  - Scans raw vault containers for `BLKH` block headers and `BLKF` block footers when indices are destroyed.
+  - Tiered confidence classification: `CryptographicallyVerified` (Secure Mode AEAD tag + CRC32 + RS parity + SHA-256) vs `StructuralAndParityVerified` (Fast Obfuscation magic + chunk headers + RS parity + CRC32).
+  - Ability to rebuild a salvaged index from discovered files.
+- [x] **Deep Vault Integrity Checker (F15) & Background Repair Service (F16):**
+  - Evaluates header HMAC, dual index parity, Reed-Solomon symbol corrections, AEAD tags, and file hashes.
+  - Generates comprehensive `VaultHealthReport` with overall health score (0–100%).
+  - Non-blocking low-priority background worker periodically scanning chunks and auto-repairing bit-rot.
+- [x] **Cryptographic Temp File Wiping (M07):**
+  - `SecureTempFile`: Overwrites with CSPRNG random bytes followed by zeroes (`0x00`) and disk flush before deletion.
+  - Explicit documentation of SSD/NVMe flash controller wear-leveling and out-of-place write allocations.
+- [x] **Screen Capture & Recording Protection (M17):**
+  - P/Invoke `SetWindowDisplayAffinity` with `WDA_EXCLUDEFROMCAPTURE` (and `WDA_MONITOR` fallback) protecting vault data from screenshots, screen recorders, and remote viewers.
+- [x] **In-Memory Clipboard Ingestion (C24):**
+  - Ingests clipboard images, copied files, and text snippets directly in-memory into encrypted chunks without intermediate temporary disk files.
+- [x] **Multi-Mode Library Presentation (D21, N10, N11):**
+  - `VirtualizedFileGrid.xaml`: Virtualized 60fps card grid.
+  - `FileListView.xaml`: Detailed tabular view with sortable column headers (Name, Type, Size, Date Modified, Security, Part).
+  - `TimelineView.xaml`: Date-grouped chronological timeline presentation (Year/Month headers).
+  - Instant view mode switching via dedicated toolbar icon buttons.
+- [x] **File Properties Dialog (N13, C22):**
+  - Tabbed inspector: General metadata, Cryptography (Plaintext SHA-256, UUID, Protection Mode, First Chunk Offset), and Chunk Table showing per-chunk offsets, sizes, CRC32, AuthTag, and RS parity.
+- [x] **Application Settings (N14):**
+  - `SettingsPage.xaml`: Toggles for Screen Protection, Inactivity Auto-Lock duration, Workstation Lock auto-lock, Default Protection Mode, and Password Hint management.
+- [x] **Session Persistence & History (D20, N20):**
+  - `WindowStateService`: Restores and persists window width, height, position, and maximized state.
+  - `RecentFilesService`: Tracks FIFO 20-file access history in encrypted `VaultCache`.
+- [x] **Test Suite Verification:**
+  - Added `FileReplaceOperationTests.cs` (content replacement, fresh nonces, SHA-256 update).
+  - Added `DuplicateDetectorTests.cs` (duplicate grouping, wasted space, CoW awareness).
+  - Added `VaultCompactionTests.cs` (single vault compaction, multi-vault chain compaction with master index update, rollback safety).
+  - Added `RecoveryScannerTests.cs` (salvaging files with wiped index, tiered confidence).
+  - Added `RepairLoggerTests.cs` (audit logging, re-verification assertion).
+  - Added `IntegrityCheckerTests.cs` (healthy vault 100% score, tampered chunk detection).
+  - Added `SecureTempFileTests.cs` (multi-pass wipe before delete).
+  - **Test Results:** 120 / 120 Passed (100% success rate).
+  - `src/SecureVault.sln` builds with **0 errors and 0 warnings** on x64.
+
+---
+
+## Current State: Phase 6 Complete (All 120 Tests Passing, Solution Builds with 0 Errors)
+- **Current Milestone:** Phase 6: Polish, Hardening & Production Release — **COMPLETE**
+- **All Phases 1–6:** **100% COMPLETE**
+- **Branch:** `phase-6/polish`
 - **Environment:** Isolated .NET 8 SDK (8.0.424) in `$env:USERPROFILE\.dotnet`
-- **Activation:** Run `. .\activate.ps1` in PowerShell to set `DOTNET_ROOT` and `PATH`
+- **Total Unit Tests Passing:** 120 / 120
+- **Total Build Status:** 0 errors, 0 warnings across all projects on x64.
 
 

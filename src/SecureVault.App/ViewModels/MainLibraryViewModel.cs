@@ -82,6 +82,9 @@ public partial class MainLibraryViewModel : ObservableObject
     public Action? OnCreateNewNoteRequested { get; set; }
     public Action? OnOpenFileManagerRequested { get; set; }
     public Action? OnOpenBackupRequested { get; set; }
+    public ViewModeViewModel ViewMode { get; } = new();
+    public Action? OnOpenCompactionRequested { get; set; }
+    public Action? OnOpenSettingsRequested { get; set; }
     public Action? OnOpenVaultChainHealthRequested { get; set; }
     public Func<Task<IReadOnlyList<string>>>? OnPickFilesToAdd { get; set; }
     public Func<Task<string?>>? OnPickFolderToAdd { get; set; }
@@ -89,6 +92,56 @@ public partial class MainLibraryViewModel : ObservableObject
     public Func<Task<string?>>? OnPickExportDestinationFolder { get; set; }
     public Func<string, Task<string?>>? OnPromptRename { get; set; }
     public Func<string, string, Task<bool>>? OnConfirmAction { get; set; }
+
+    [RelayCommand]
+    public void OpenCompaction() => OnOpenCompactionRequested?.Invoke();
+
+    [RelayCommand]
+    public void OpenSettings() => OnOpenSettingsRequested?.Invoke();
+
+    [RelayCommand]
+    public async Task PasteClipboardAsync()
+    {
+        if (!Services.ClipboardService.CanPaste()) return;
+
+        IsOperationRunning = true;
+        OperationTitle = "Pasting from Clipboard";
+        OperationStatusText = "Ingesting data directly into vault memory...";
+
+        try
+        {
+            var added = await Services.ClipboardService.PasteToVaultAsync(_vault, CurrentFolderPath);
+            RefreshData();
+            Services.NotificationService.Shared.ShowSuccess("Clipboard Ingested", $"Added {added.Count} item(s) from clipboard.");
+        }
+        catch (Exception ex)
+        {
+            Services.NotificationService.Shared.ShowError("Paste Failed", ex.Message);
+        }
+        finally
+        {
+            IsOperationRunning = false;
+        }
+    }
+
+    public void ApplySort(SortField field)
+    {
+        if (CurrentSortField == field)
+        {
+            CurrentSortDirection = CurrentSortDirection == SortDirection.Ascending
+                ? SortDirection.Descending
+                : SortDirection.Ascending;
+        }
+        else
+        {
+            CurrentSortField = field;
+            CurrentSortDirection = SortDirection.Ascending;
+        }
+
+        RefreshData();
+    }
+
+    public void LoadFiles() => RefreshData();
 
     public MainLibraryViewModel(VaultManager vault)
     {

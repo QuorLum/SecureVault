@@ -15,7 +15,7 @@ public sealed class VaultManager : IDisposable
 {
     private readonly string _vaultPath;
     private readonly VaultFileLock _fileLock;
-    private readonly FileStream _stream;
+    private FileStream _stream;
     private readonly SecureBuffer _masterKey;
     private readonly EncryptionService _encryption;
     private readonly ReedSolomonCodec _rsCodec;
@@ -36,6 +36,16 @@ public sealed class VaultManager : IDisposable
     internal VaultIndex Index => _index;
     internal FileStream Stream => _stream;
     internal void PersistIndexAndFooter() => SaveIndexAndFooter();
+
+    internal void UpdateStreamAfterCompaction(FileStream newStream, VaultHeader newHeader)
+    {
+        _stream = newStream;
+        _header.PrimaryIndexOffset = newHeader.PrimaryIndexOffset;
+        _header.PrimaryIndexLength = newHeader.PrimaryIndexLength;
+        _header.BackupIndexOffset = newHeader.BackupIndexOffset;
+        _header.BackupIndexLength = newHeader.BackupIndexLength;
+        _header.HeaderHMAC = newHeader.HeaderHMAC;
+    }
 
     private VaultManager(
         string vaultPath,

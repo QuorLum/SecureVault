@@ -88,6 +88,23 @@ public sealed partial class MainLibraryPage : Page
                 await dialog.ShowAsync();
             };
 
+            ViewModel.OnOpenCompactionRequested = async () =>
+            {
+                var chain = new Core.MultiVault.VaultChainManager(vault);
+                var compVm = new CompactionDialogViewModel(vault, chain);
+                var dialog = new CompactionDialog(compVm)
+                {
+                    XamlRoot = XamlRoot
+                };
+                await dialog.ShowAsync();
+            };
+
+            ViewModel.OnOpenSettingsRequested = () =>
+            {
+                var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.CurrentWindow);
+                Frame.Navigate(typeof(SettingsPage), (vault, hwnd));
+            };
+
             ViewModel.OnPickFilesToAdd = PickFilesToAddAsync;
             ViewModel.OnPickFolderToAdd = PickFolderToAddAsync;
             ViewModel.OnPickExportDestinationFile = PickExportDestinationFileAsync;

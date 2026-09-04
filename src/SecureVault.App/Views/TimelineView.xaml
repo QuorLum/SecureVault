@@ -1,0 +1,64 @@
+<UserControl
+    x:Class="SecureVault.App.Views.TimelineView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="using:SecureVault.App.Views"
+    xmlns:vm="using:SecureVault.App.ViewModels"
+    mc:Ignorable="d">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+        <ItemsControl x:Name="TimelineGroupsList" ItemsSource="{x:Bind TimelineGroups, Mode=OneWay}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="local:TimelineGroup">
+                    <StackPanel Spacing="12" Margin="0,0,0,24">
+                        <!-- Date Header Pill -->
+                        <Border Background="#18181B" BorderBrush="#27272A" BorderThickness="1" CornerRadius="12"
+                                HorizontalAlignment="Left" Padding="12,6">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE787;" FontSize="13" Foreground="{StaticResource AppAccentBrush}" />
+                                <TextBlock Text="{x:Bind Header}" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Text="{x:Bind ItemCountText}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Group Items -->
+                        <ItemsRepeater ItemsSource="{x:Bind Items}">
+                            <ItemsRepeater.Layout>
+                                <UniformGridLayout MinItemWidth="140" MinItemHeight="120" MinColumnSpacing="12" MinRowSpacing="12" />
+                            </ItemsRepeater.Layout>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="vm:FileItemViewModel">
+                                    <Border Background="{StaticResource AppCardBrush}" 
+                                            BorderBrush="{StaticResource AppBorderBrush}" 
+                                            BorderThickness="1" 
+                                            CornerRadius="8" 
+                                            Padding="10"
+                                            DoubleTapped="OnItemDoubleTapped">
+                                        <Border.ContextFlyout>
+                                            <MenuFlyout>
+                                                <MenuFlyoutItem Text="Open" Icon="OpenWith" Click="OnOpenClicked" FontWeight="SemiBold" />
+                                                <MenuFlyoutItem Text="Properties" Icon="Document" Click="OnPropertiesClicked" />
+                                                <MenuFlyoutItem Text="Export to Disk" Icon="Download" Click="OnExportClicked" />
+                                                <MenuFlyoutItem Text="Rename" Icon="Rename" Click="OnRenameClicked" />
+                                                <MenuFlyoutSeparator />
+                                                <MenuFlyoutItem Text="Delete" Icon="Delete" Foreground="#FB7185" Click="OnDeleteClicked" />
+                                            </MenuFlyout>
+                                        </Border.ContextFlyout>
+
+                                        <StackPanel Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <FontIcon Glyph="{x:Bind IconGlyph}" FontSize="28" Foreground="{StaticResource AppAccentBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="{x:Bind FileName}" FontSize="11" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" MaxWidth="110" HorizontalAlignment="Center" />
+                                            <TextBlock Text="{x:Bind FormattedSize}" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </ScrollViewer>
+</UserControl>

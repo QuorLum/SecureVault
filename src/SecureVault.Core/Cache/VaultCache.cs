@@ -29,6 +29,12 @@ public sealed class UIState
 
     [Key(6)]
     public int SortDirection { get; set; } = (int)Organization.SortDirection.Ascending;
+
+    [Key(7)]
+    public int ViewMode { get; set; } = 0; // 0 = Grid, 1 = Detailed List, 2 = Timeline
+
+    [Key(8)]
+    public List<Guid> RecentFileGuids { get; set; } = new();
 }
 
 [MessagePackObject]

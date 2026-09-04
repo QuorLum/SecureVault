@@ -1,0 +1,109 @@
+<Page
+    x:Class="SecureVault.App.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:SecureVault.App.ViewModels"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="720" Margin="32,24" Spacing="24">
+            <!-- Header -->
+            <StackPanel Spacing="4">
+                <TextBlock Text="Settings &amp; Security Preferences" FontSize="22" FontWeight="SemiBold" />
+                <TextBlock Text="Configure defense-in-depth security, window capture protection, and default encryption behavior."
+                           FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" />
+            </StackPanel>
+
+            <!-- Status Banner -->
+            <Border Background="#141417" BorderBrush="#27272A" BorderThickness="1" CornerRadius="8" Padding="12"
+                    Visibility="{x:Bind ViewModel.StatusMessage, Mode=OneWay, Converter={StaticResource StringToVisibleConverter}}">
+                <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" FontSize="12" Foreground="#10B981" />
+            </Border>
+
+            <!-- SECTION 1: SECURITY & PRIVACY -->
+            <StackPanel Spacing="12">
+                <TextBlock Text="Security &amp; Inactivity" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+
+                <!-- Screen Protection Toggle (M17) -->
+                <Border Background="#141417" BorderBrush="#27272A" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Screen Capture &amp; Recording Protection (M17)" FontWeight="SemiBold" FontSize="13" />
+                            <TextBlock Text="Prevents third-party screen recorders, screenshot tools, and remote desktop viewers from capturing confidential vault data."
+                                       FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleSwitch Grid.Column="1" IsOn="{x:Bind ViewModel.IsScreenProtectionEnabled, Mode=TwoWay}" OnContent="" OffContent="" />
+                    </Grid>
+                </Border>
+
+                <!-- Inactivity Auto-Lock (A08) -->
+                <Border Background="#141417" BorderBrush="#27272A" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Inactivity Auto-Lock Timeout" FontWeight="SemiBold" FontSize="13" />
+                            <TextBlock Text="Automatically wipes memory keys and locks the vault after keyboard and mouse inactivity."
+                                       FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" Width="140" SelectedValue="{x:Bind ViewModel.AutoLockMinutes, Mode=TwoWay}" SelectedValuePath="Tag">
+                            <ComboBoxItem Content="5 Minutes" Tag="5" />
+                            <ComboBoxItem Content="10 Minutes" Tag="10" />
+                            <ComboBoxItem Content="15 Minutes" Tag="15" />
+                            <ComboBoxItem Content="30 Minutes" Tag="30" />
+                            <ComboBoxItem Content="Never" Tag="0" />
+                        </ComboBox>
+                    </Grid>
+                </Border>
+
+                <!-- Lock on System Lock (A09) -->
+                <Border Background="#141417" BorderBrush="#27272A" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Lock on Workstation Lock (Win + L)" FontWeight="SemiBold" FontSize="13" />
+                            <TextBlock Text="Instantly zero master keys and lock vault whenever Windows session locks."
+                                       FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleSwitch Grid.Column="1" IsOn="{x:Bind ViewModel.AutoLockOnSystemLock, Mode=TwoWay}" OnContent="" OffContent="" />
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <!-- SECTION 2: ENCRYPTION DEFAULTS -->
+            <StackPanel Spacing="12">
+                <TextBlock Text="Encryption Defaults" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+
+                <Border Background="#141417" BorderBrush="#27272A" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Default Protection Mode for Ingested Files" FontWeight="SemiBold" FontSize="13" />
+                            <TextBlock Text="Choose default cipher for files imported via drag-and-drop or clipboard."
+                                       FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" Width="180" SelectedIndex="{x:Bind ViewModel.DefaultProtectionModeIndex, Mode=TwoWay}">
+                            <ComboBoxItem Content="Secure Mode (AES-256)" />
+                            <ComboBoxItem Content="Fast Mode (Obfuscated)" />
+                        </ComboBox>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <!-- SECTION 3: PASSWORD HINT -->
+            <StackPanel Spacing="12">
+                <TextBlock Text="Password Hint (A05)" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+
+                <Border Background="#141417" BorderBrush="#27272A" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Stored in the unencrypted header prefix and viewable at the login screen without unlocking."
+                                   FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBox Grid.Column="0" Text="{x:Bind ViewModel.PasswordHint, Mode=TwoWay}" PlaceholderText="Enter password hint..." Margin="0,0,8,0" />
+                            <Button Grid.Column="1" Content="Save Hint" Command="{x:Bind ViewModel.SavePasswordHintCommand}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

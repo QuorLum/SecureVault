@@ -13,7 +13,7 @@ public sealed record ChunkIndexEntry
     public required uint ChunkSequence { get; init; }
 
     [Key(1)]
-    public required ulong AbsoluteOffset { get; init; }
+    public required ulong AbsoluteOffset { get; set; }
 
     [Key(2)]
     public required uint ChunkDataLength { get; init; }

@@ -21,6 +21,10 @@ public sealed partial class MainWindow : Window
 
         AppWindow.SetIcon("Assets/AppIcon.ico");
 
+        // Restore window geometry (N20)
+        Services.WindowStateService.RestoreWindowState(this);
+        Closed += (s, e) => Services.WindowStateService.SaveWindowState(this);
+
         // Navigate the root frame to the login page on startup.
         RootFrame.Navigate(typeof(Views.LoginPage));
     }

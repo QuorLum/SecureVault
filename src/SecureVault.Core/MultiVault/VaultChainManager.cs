@@ -12,8 +12,8 @@ public sealed class SecondaryVaultPart : IDisposable
     public int PartIndex { get; }
     public string FilePath { get; }
     public VaultFileLock FileLock { get; }
-    public FileStream Stream { get; }
-    public SecondaryVaultHeader Header { get; }
+    public FileStream Stream { get; internal set; }
+    public SecondaryVaultHeader Header { get; internal set; }
     public VaultIndex LocalIndex { get; }
 
     public SecondaryVaultPart(
