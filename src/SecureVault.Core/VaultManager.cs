@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using SecureVault.Core.Cache;
 using SecureVault.Core.Crypto;
 using SecureVault.Core.Exceptions;
 using SecureVault.Core.Format;
@@ -22,12 +23,14 @@ public sealed class VaultManager : IDisposable
     private readonly ReedSolomonCodec _rsCodec;
     private readonly VaultHeader _header;
     private readonly VaultIndex _index;
+    private readonly VaultCache _cache;
     private bool _disposed;
 
     public string VaultPath => _vaultPath;
     public Guid VaultUUID => _header.VaultUUID;
     public IReadOnlyList<IndexEntry> Files => _index.Entries.Where(e => !e.IsDeleted).ToList();
     public bool IsLocked => _disposed;
+    public VaultCache Cache => _cache;
     public long StreamLength
     {
         get
@@ -52,6 +55,15 @@ public sealed class VaultManager : IDisposable
     internal FileStream Stream => _stream;
     internal SemaphoreSlim StreamLock => _streamLock;
     internal void PersistIndexAndFooter() => SaveIndexAndFooter();
+
+    /// <summary>
+    /// Persists the UI state and cached thumbnails to encrypted local cache.
+    /// </summary>
+    public void SaveCacheSnapshot(Cache.UIState uiState, Dictionary<Guid, byte[]>? thumbnails = null)
+    {
+        EnsureUnlocked();
+        _cache.SaveSnapshot(_index, thumbnails ?? new(), uiState);
+    }
 
     internal void UpdateStreamAfterCompaction(FileStream newStream, VaultHeader newHeader)
     {
@@ -79,6 +91,9 @@ public sealed class VaultManager : IDisposable
         _index = index;
         _rsCodec = new ReedSolomonCodec();
         _encryption = new EncryptionService(masterKey);
+
+        using var cacheKey = CacheEncryption.DeriveCacheKey(masterKey);
+        _cache = new VaultCache(header.VaultUUID, cacheKey);
     }
 
     /// <summary>
@@ -494,6 +509,7 @@ public sealed class VaultManager : IDisposable
             }
             catch { }
 
+            _cache.Dispose();
             _encryption.Dispose();
             _masterKey.Dispose();
             _stream.Dispose();

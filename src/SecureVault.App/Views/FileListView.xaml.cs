@@ -51,12 +51,19 @@ public sealed partial class FileListView : UserControl
     {
         if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
         {
-            var propVm = new FilePropertiesViewModel(item.Entry);
-            var dialog = new FilePropertiesDialog(propVm)
+            try
             {
-                XamlRoot = this.XamlRoot
-            };
-            await dialog.ShowAsync();
+                var propVm = new FilePropertiesViewModel(item.Entry);
+                var dialog = new FilePropertiesDialog(propVm)
+                {
+                    XamlRoot = this.XamlRoot
+                };
+                await dialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error showing properties: {ex.Message}");
+            }
         }
     }
 
@@ -64,21 +71,28 @@ public sealed partial class FileListView : UserControl
     {
         if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item && ViewModel?.Vault != null)
         {
-            var picker = new FileOpenPicker();
-            picker.FileTypeFilter.Add("*");
-
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.CurrentWindow);
-            WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
-
-            var file = await picker.PickSingleFileAsync();
-            if (file != null)
+            try
             {
-                using var stream = await file.OpenStreamForReadAsync();
-                var replacer = new FileReplaceOperation(ViewModel.Vault);
-                await replacer.ReplaceFileDataAsync(item.FileGuid, stream);
+                var picker = new FileOpenPicker();
+                picker.FileTypeFilter.Add("*");
 
-                // Refresh files
-                ViewModel.LoadFiles();
+                var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.CurrentWindow);
+                WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+
+                var file = await picker.PickSingleFileAsync();
+                if (file != null)
+                {
+                    using var stream = await file.OpenStreamForReadAsync();
+                    var replacer = new FileReplaceOperation(ViewModel.Vault);
+                    await replacer.ReplaceFileDataAsync(item.FileGuid, stream);
+
+                    // Refresh files
+                    ViewModel.LoadFiles();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error replacing file: {ex.Message}");
             }
         }
     }

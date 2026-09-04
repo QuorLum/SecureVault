@@ -30,15 +30,38 @@ public partial class App : Application
     /// </summary>
     public App()
     {
+        AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+        {
+            LogCrash("AppDomain.UnhandledException", e.ExceptionObject as Exception);
+        };
+
+        TaskScheduler.UnobservedTaskException += (s, e) =>
+        {
+            LogCrash("TaskScheduler.UnobservedTaskException", e.Exception);
+            e.SetObserved();
+        };
+
         this.UnhandledException += (s, e) =>
         {
-            try
-            {
-                System.IO.File.WriteAllText("xaml_unhandled.log", $"XAML Unhandled: {e.Message}\n{e.Exception}");
-            }
-            catch { }
+            LogCrash("Xaml.UnhandledException", e.Exception);
         };
+
         InitializeComponent();
+    }
+
+    private static void LogCrash(string source, Exception? ex)
+    {
+        try
+        {
+            string logDir = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "SecureVault", "logs");
+            System.IO.Directory.CreateDirectory(logDir);
+            string logFile = System.IO.Path.Combine(logDir, "crash.log");
+            string entry = $"[{DateTime.UtcNow:O}] [{source}] {ex?.Message}\n{ex?.StackTrace}\n\n";
+            System.IO.File.AppendAllText(logFile, entry);
+        }
+        catch { }
     }
 
     /// <summary>

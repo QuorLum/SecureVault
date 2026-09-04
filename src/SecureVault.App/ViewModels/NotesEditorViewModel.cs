@@ -11,11 +11,13 @@ namespace SecureVault.App.ViewModels;
 public partial class NotesEditorViewModel : ObservableObject, IDisposable
 {
     private readonly VaultManager _vault;
-    private readonly IndexEntry? _existingEntry;
+    private IndexEntry? _currentEntry;
     private NoteDocument _document;
     private DispatcherQueueTimer? _autoSaveTimer;
     private bool _hasUnsavedChanges;
     private bool _disposed;
+
+    public IndexEntry? CurrentEntry => _currentEntry;
 
     [ObservableProperty]
     private string _title = "Untitled Note";
@@ -44,7 +46,7 @@ public partial class NotesEditorViewModel : ObservableObject, IDisposable
     {
         ArgumentNullException.ThrowIfNull(vault);
         _vault = vault;
-        _existingEntry = existingEntry;
+        _currentEntry = existingEntry;
 
         if (existingEntry != null)
         {
@@ -97,9 +99,16 @@ public partial class NotesEditorViewModel : ObservableObject, IDisposable
             _autoSaveTimer.Interval = TimeSpan.FromSeconds(3); // 3-second debounce (J08)
             _autoSaveTimer.Tick += async (s, e) =>
             {
-                if (_hasUnsavedChanges)
+                try
                 {
-                    await SaveAsync();
+                    if (_hasUnsavedChanges)
+                    {
+                        await SaveAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    StatusText = $"Auto-save error: {ex.Message}";
                 }
             };
             _autoSaveTimer.Start();
@@ -146,18 +155,23 @@ public partial class NotesEditorViewModel : ObservableObject, IDisposable
 
         try
         {
-            if (_existingEntry != null)
+            if (_currentEntry != null)
             {
-                // Replace note data: delete old entry and add updated entry
-                _existingEntry.FileName = fileName;
-                _existingEntry.DateModifiedTicks = DateTime.UtcNow.Ticks;
-                // Add new version
-                await _vault.AddFileAsync(ms, fileName, _existingEntry.VirtualFolderPath, _existingEntry.ProtectionMode);
-                _vault.DeleteFile(_existingEntry.FileGuid);
+                Guid oldGuid = _currentEntry.FileGuid;
+                string vPath = _currentEntry.VirtualFolderPath;
+                ProtectionMode mode = _currentEntry.ProtectionMode;
+
+                // Add updated version first
+                var newEntry = await _vault.AddFileAsync(ms, fileName, vPath, mode);
+                // Remove obsolete previous entry
+                _vault.DeleteFile(oldGuid);
+                // Update reference to the new active entry
+                _currentEntry = newEntry;
             }
             else
             {
-                await _vault.AddFileAsync(ms, fileName, "/", ProtectionMode.SecureMode);
+                var newEntry = await _vault.AddFileAsync(ms, fileName, "/", ProtectionMode.SecureMode);
+                _currentEntry = newEntry;
             }
 
             _hasUnsavedChanges = false;

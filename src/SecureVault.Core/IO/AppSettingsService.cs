@@ -138,7 +138,7 @@ public sealed class AppSettingsService
                 if (File.Exists(_configFilePath))
                 {
                     var json = File.ReadAllText(_configFilePath);
-                    var loaded = JsonSerializer.Deserialize<SettingsData>(json);
+                    var loaded = JsonSerializer.Deserialize(json, SecureVaultJsonContext.Default.SettingsData);
                     if (loaded != null)
                     {
                         _data = loaded;
@@ -163,20 +163,13 @@ public sealed class AppSettingsService
                     Directory.CreateDirectory(_configDirectory);
                 }
 
-                var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(_data, new JsonSerializerOptions { WriteIndented = true });
+                var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(_data, SecureVaultJsonContext.Default.SettingsData);
                 AtomicWriter.WriteAllBytes(_configFilePath, jsonBytes);
             }
-            catch
+            catch (Exception ex)
             {
-                // Suppress I/O errors during save
+                System.Diagnostics.Debug.WriteLine($"Failed to save AppSettings: {ex.Message}");
             }
         }
-    }
-
-    private sealed class SettingsData
-    {
-        public string? LastVaultPath { get; set; }
-        public List<string> RecentVaults { get; set; } = new();
-        public bool HasCompletedFirstRun { get; set; }
     }
 }

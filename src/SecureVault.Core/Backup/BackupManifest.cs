@@ -84,14 +84,14 @@ public sealed class BackupManifest
 
     public void SaveToFile(string path)
     {
-        string json = JsonSerializer.Serialize(this, JsonOptions);
+        string json = JsonSerializer.Serialize(this, SecureVault.Core.IO.SecureVaultJsonContext.Default.BackupManifest);
         File.WriteAllText(path, json);
     }
 
     public static BackupManifest LoadFromFile(string path)
     {
         string json = File.ReadAllText(path);
-        return JsonSerializer.Deserialize<BackupManifest>(json, JsonOptions)
+        return JsonSerializer.Deserialize(json, SecureVault.Core.IO.SecureVaultJsonContext.Default.BackupManifest)
                ?? throw new InvalidOperationException($"Failed to deserialize backup manifest at '{path}'.");
     }
 }

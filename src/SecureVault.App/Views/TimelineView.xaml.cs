@@ -33,10 +33,26 @@ public sealed partial class TimelineView : UserControl
             {
                 if (e.PropertyName == nameof(MainLibraryViewModel.Files))
                 {
+                    HookCollectionChanged();
                     RefreshTimeline();
                 }
             };
+            HookCollectionChanged();
         }
+    }
+
+    private void HookCollectionChanged()
+    {
+        if (ViewModel?.Files != null)
+        {
+            ViewModel.Files.CollectionChanged -= OnFilesCollectionChanged;
+            ViewModel.Files.CollectionChanged += OnFilesCollectionChanged;
+        }
+    }
+
+    private void OnFilesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        RefreshTimeline();
     }
 
     private void RefreshTimeline()
@@ -83,12 +99,19 @@ public sealed partial class TimelineView : UserControl
     {
         if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
         {
-            var propVm = new FilePropertiesViewModel(item.Entry);
-            var dialog = new FilePropertiesDialog(propVm)
+            try
             {
-                XamlRoot = this.XamlRoot
-            };
-            await dialog.ShowAsync();
+                var propVm = new FilePropertiesViewModel(item.Entry);
+                var dialog = new FilePropertiesDialog(propVm)
+                {
+                    XamlRoot = this.XamlRoot
+                };
+                await dialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error showing properties: {ex.Message}");
+            }
         }
     }
 

@@ -10,6 +10,7 @@ namespace SecureVault.Core.Media;
 /// </summary>
 public sealed class PdfRenderer : IDisposable
 {
+    private readonly byte[] _pdfBytes;
     private readonly IDocReader _docReader;
     private bool _disposed;
 
@@ -18,7 +19,11 @@ public sealed class PdfRenderer : IDisposable
     public PdfRenderer(byte[] pdfBytes)
     {
         ArgumentNullException.ThrowIfNull(pdfBytes);
-        _docReader = DocLib.Instance.GetDocReader(pdfBytes, new PageDimensions(1080, 1920));
+        if (pdfBytes.Length == 0)
+            throw new ArgumentException("PDF byte array cannot be empty.", nameof(pdfBytes));
+
+        _pdfBytes = pdfBytes;
+        _docReader = DocLib.Instance.GetDocReader(_pdfBytes, new PageDimensions(1080, 1920));
     }
 
     public PdfRenderer(Stream pdfStream)
@@ -26,7 +31,11 @@ public sealed class PdfRenderer : IDisposable
         ArgumentNullException.ThrowIfNull(pdfStream);
         using var ms = new MemoryStream();
         pdfStream.CopyTo(ms);
-        _docReader = DocLib.Instance.GetDocReader(ms.ToArray(), new PageDimensions(1080, 1920));
+        _pdfBytes = ms.ToArray();
+        if (_pdfBytes.Length == 0)
+            throw new ArgumentException("PDF stream contains no data.", nameof(pdfStream));
+
+        _docReader = DocLib.Instance.GetDocReader(_pdfBytes, new PageDimensions(1080, 1920));
     }
 
     /// <summary>
@@ -39,24 +48,29 @@ public sealed class PdfRenderer : IDisposable
         if (pageIndex < 0 || pageIndex >= PageCount)
             throw new ArgumentOutOfRangeException(nameof(pageIndex), $"Page index {pageIndex} is out of range (Total: {PageCount}).");
 
+        if (scale <= 0) scale = 1.0;
+
         using var pageReader = _docReader.GetPageReader(pageIndex);
         int origWidth = pageReader.GetPageWidth();
         int origHeight = pageReader.GetPageHeight();
 
-        // Calculate scaled dimensions
-        int scaledWidth = Math.Max(1, (int)(origWidth * scale));
-        int scaledHeight = Math.Max(1, (int)(origHeight * scale));
-
-        // Re-read page with requested dimensions if scaled
-        if (scale != 1.0)
+        if (Math.Abs(scale - 1.0) < 0.01)
         {
-            using var scaledDocReader = DocLib.Instance.GetDocReader(
-                _docReader.GetPageReader(pageIndex).GetImage(), // or re-read from source
-                new PageDimensions(scaledWidth, scaledHeight));
+            byte[] rawBgra = pageReader.GetImage();
+            return (rawBgra, origWidth, origHeight);
         }
 
-        byte[] rawBgra = pageReader.GetImage();
-        return (rawBgra, origWidth, origHeight);
+        // Calculate scaled dimensions (clamped to sensible bounds)
+        int scaledWidth = Math.Clamp((int)(origWidth * scale), 10, 8192);
+        int scaledHeight = Math.Clamp((int)(origHeight * scale), 10, 8192);
+
+        using var scaledDocReader = DocLib.Instance.GetDocReader(_pdfBytes, new PageDimensions(scaledWidth, scaledHeight));
+        using var scaledPageReader = scaledDocReader.GetPageReader(pageIndex);
+        byte[] scaledBgra = scaledPageReader.GetImage();
+        int actualWidth = scaledPageReader.GetPageWidth();
+        int actualHeight = scaledPageReader.GetPageHeight();
+
+        return (scaledBgra, actualWidth, actualHeight);
     }
 
     /// <summary>

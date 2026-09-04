@@ -59,14 +59,14 @@ public sealed class VaultChainManifest
 
     public void SaveToFile(string path)
     {
-        string json = JsonSerializer.Serialize(this, JsonOptions);
+        string json = JsonSerializer.Serialize(this, SecureVault.Core.IO.SecureVaultJsonContext.Default.VaultChainManifest);
         File.WriteAllText(path, json);
     }
 
     public static VaultChainManifest LoadFromFile(string path)
     {
         string json = File.ReadAllText(path);
-        return JsonSerializer.Deserialize<VaultChainManifest>(json, JsonOptions)
+        return JsonSerializer.Deserialize(json, SecureVault.Core.IO.SecureVaultJsonContext.Default.VaultChainManifest)
                ?? throw new InvalidOperationException($"Failed to deserialize vault chain manifest at '{path}'.");
     }
 }

@@ -69,15 +69,22 @@ public partial class PhotoViewerViewModel : ObservableObject
         ZoomLevel = 1.0;
         _currentRotationDegrees = 0;
 
-        using var stream = _vault.OpenFileStream(entry);
-
-        // Extract EXIF in memory
-        ExifData = ExifMetadataReader.Read(stream);
-        stream.Seek(0, SeekOrigin.Begin);
-
-        // Decode into SKBitmap for dimension retrieval and rotation support
         try
         {
+            using var stream = _vault.OpenFileStream(entry);
+
+            // Extract EXIF in memory
+            try
+            {
+                ExifData = ExifMetadataReader.Read(stream);
+                stream.Seek(0, SeekOrigin.Begin);
+            }
+            catch
+            {
+                ExifData = null;
+            }
+
+            // Decode into SKBitmap for dimension retrieval and rotation support
             using var skBitmap = ImageDecoder.Decode(stream);
             DimensionsText = $"{skBitmap.Width} × {skBitmap.Height} px";
 
@@ -99,6 +106,7 @@ public partial class PhotoViewerViewModel : ObservableObject
         catch
         {
             DimensionsText = "Preview Unavailable";
+            DisplayImage = null;
         }
     }
 
@@ -154,31 +162,38 @@ public partial class PhotoViewerViewModel : ObservableObject
 
     private void RotateImage(float deltaDegrees)
     {
-        if (_photoEntries.Count == 0) return;
+        if (_photoEntries.Count == 0 || _currentIndex < 0 || _currentIndex >= _photoEntries.Count) return;
         var entry = _photoEntries[_currentIndex];
 
-        _currentRotationDegrees = (_currentRotationDegrees + deltaDegrees) % 360;
-
-        using var stream = _vault.OpenFileStream(entry);
-        using var original = ImageDecoder.Decode(stream);
-        using var rotated = ImageDecoder.Rotate(original, _currentRotationDegrees);
-
-        using var image = SkiaSharp.SKImage.FromBitmap(rotated);
-        using var encoded = image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
-
-        var ras = new InMemoryRandomAccessStream();
-        using (var outStream = ras.GetOutputStreamAt(0))
+        try
         {
-            using var netStream = outStream.AsStreamForWrite();
-            encoded.SaveTo(netStream);
-            netStream.Flush();
-        }
-        ras.Seek(0);
+            _currentRotationDegrees = (_currentRotationDegrees + deltaDegrees) % 360;
 
-        var bmp = new BitmapImage();
-        bmp.SetSource(ras);
-        DisplayImage = bmp;
-        DimensionsText = $"{rotated.Width} × {rotated.Height} px";
+            using var stream = _vault.OpenFileStream(entry);
+            using var original = ImageDecoder.Decode(stream);
+            using var rotated = ImageDecoder.Rotate(original, _currentRotationDegrees);
+
+            using var image = SkiaSharp.SKImage.FromBitmap(rotated);
+            using var encoded = image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
+
+            var ras = new InMemoryRandomAccessStream();
+            using (var outStream = ras.GetOutputStreamAt(0))
+            {
+                using var netStream = outStream.AsStreamForWrite();
+                encoded.SaveTo(netStream);
+                netStream.Flush();
+            }
+            ras.Seek(0);
+
+            var bmp = new BitmapImage();
+            bmp.SetSource(ras);
+            DisplayImage = bmp;
+            DimensionsText = $"{rotated.Width} × {rotated.Height} px";
+        }
+        catch
+        {
+            DimensionsText = "Rotation Failed";
+        }
     }
 
     [RelayCommand]

@@ -158,6 +158,35 @@ public partial class MainLibraryViewModel : ObservableObject
         _fileOps = new FileManagementOperations(vault, _folderService);
         _batchAdd = new BatchFileAddOperation(vault);
 
+        // Restore UI State from encrypted cache if available
+        try
+        {
+            var (_, _, cachedUI) = _vault.Cache.LoadSnapshot();
+            if (cachedUI != null)
+            {
+                _currentSortField = (SortField)cachedUI.SortField;
+                _currentSortDirection = (SortDirection)cachedUI.SortDirection;
+                if (cachedUI.ViewMode >= 0 && cachedUI.ViewMode <= 2)
+                {
+                    ViewMode.CurrentMode = (VaultViewMode)cachedUI.ViewMode;
+                }
+                if (cachedUI.SelectedCategory.HasValue)
+                {
+                    _selectedCategory = (FileCategory)cachedUI.SelectedCategory.Value;
+                }
+                if (cachedUI.LastViewedFolderGuid.HasValue)
+                {
+                    _currentFolderGuid = cachedUI.LastViewedFolderGuid.Value;
+                    var folder = dummyIndex.Entries.FirstOrDefault(e => e.FileGuid == _currentFolderGuid);
+                    if (folder != null)
+                    {
+                        _currentFolderPath = folder.VirtualFolderPath;
+                    }
+                }
+            }
+        }
+        catch { }
+
         RefreshData();
     }
 
@@ -450,9 +479,27 @@ public partial class MainLibraryViewModel : ObservableObject
         _operationCts?.Cancel();
     }
 
+    public void PersistUIState()
+    {
+        try
+        {
+            var ui = new UIState
+            {
+                SortField = (int)CurrentSortField,
+                SortDirection = (int)CurrentSortDirection,
+                ViewMode = (int)ViewMode.CurrentMode,
+                SelectedCategory = SelectedCategory.HasValue ? (byte)SelectedCategory.Value : null,
+                LastViewedFolderGuid = CurrentFolderGuid
+            };
+            _vault.SaveCacheSnapshot(ui);
+        }
+        catch { }
+    }
+
     [RelayCommand]
     public void LockVault()
     {
+        PersistUIState();
         _vault.Lock();
         OnLockRequested?.Invoke();
     }

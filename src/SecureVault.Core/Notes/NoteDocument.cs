@@ -4,7 +4,7 @@ using Markdig;
 
 namespace SecureVault.Core.Notes;
 
-[JsonConverter(typeof(JsonStringEnumConverter))]
+[JsonConverter(typeof(JsonStringEnumConverter<NoteFormat>))]
 public enum NoteFormat
 {
     PlainText = 0,
@@ -35,16 +35,13 @@ public sealed class NoteDocument
 
     public byte[] Serialize()
     {
-        return JsonSerializer.SerializeToUtf8Bytes(this, new JsonSerializerOptions
-        {
-            WriteIndented = true
-        });
+        return JsonSerializer.SerializeToUtf8Bytes(this, SecureVault.Core.IO.SecureVaultJsonContext.Default.NoteDocument);
     }
 
     public static NoteDocument Deserialize(byte[] data)
     {
         ArgumentNullException.ThrowIfNull(data);
-        var doc = JsonSerializer.Deserialize<NoteDocument>(data);
+        var doc = JsonSerializer.Deserialize(data, SecureVault.Core.IO.SecureVaultJsonContext.Default.NoteDocument);
         return doc ?? new NoteDocument();
     }
 
