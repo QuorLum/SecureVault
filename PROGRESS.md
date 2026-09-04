@@ -307,6 +307,11 @@
 - [x] **Workspace Cleanup:**
   - Removed duplicate `SecureVault-Vision-v2.md` and internal AI meta-prompt `prompt.md` from git tracking.
   - Preserved canonical `docs/vision.md`.
+- [x] **Startup Hang Diagnostic & Fix:**
+  - **Thread Stack & Root Cause:** Captured live thread dump via `dotnet-stack` and WER analysis (`Exit Code: -1073741189` / `0xC000027B` stowed exception). Diagnosed `System.TypeLoadException: Could not load type 'LibVLCSharp.Platforms.Windows.VideoView' from assembly 'LibVLCSharp'`. The non-UI `LibVLCSharp.dll` (229KB) from `SecureVault.Core` transitively overwrote the WinUI `LibVLCSharp.dll` (294KB) containing `VideoView`.
+  - **Resolution:** Added `<PackageReference Include="LibVLCSharp" Version="3.10.1" ExcludeAssets="all" />` to `SecureVault.App.csproj` to enforce using `LibVLCSharp.WinUI`'s assembly. Added `<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>` and `<ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>`.
+  - **Verification:** Verified both Debug and Release packaged executables initialize, render a valid visible HWND, and respond without exceptions.
 - [x] **Test Suite Verification:**
   - All 123 / 123 unit, integration, and concurrency tests passing.
   - Solution builds with 0 errors and 0 warnings.
+
