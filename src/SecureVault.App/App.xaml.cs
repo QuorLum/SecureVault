@@ -30,6 +30,14 @@ public partial class App : Application
     /// </summary>
     public App()
     {
+        this.UnhandledException += (s, e) =>
+        {
+            try
+            {
+                System.IO.File.WriteAllText("xaml_unhandled.log", $"XAML Unhandled: {e.Message}\n{e.Exception}");
+            }
+            catch { }
+        };
         InitializeComponent();
     }
 

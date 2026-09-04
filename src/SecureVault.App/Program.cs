@@ -11,6 +11,16 @@ public static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+
+        AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+        {
+            try
+            {
+                System.IO.File.WriteAllText("startup_crash.log", $"[{DateTime.Now:HH:mm:ss.fff}] UNHANDLED: {e.ExceptionObject}\n");
+            }
+            catch { }
+        };
+
         Environment.SetEnvironmentVariable("MICROSOFT_WINDOWSAPPRUNTIME_BASE_DIRECTORY", AppContext.BaseDirectory);
         WinRT.ComWrappersSupport.InitializeComWrappers();
         Microsoft.UI.Xaml.Application.Start((p) =>
