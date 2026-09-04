@@ -57,4 +57,20 @@ startxref
         Assert.Throws<ArgumentOutOfRangeException>(() => renderer.RenderPage(99));
         Assert.Throws<ArgumentOutOfRangeException>(() => renderer.RenderPage(-1));
     }
+
+    [Theory]
+    [InlineData(0.5)]
+    [InlineData(1.0)]
+    [InlineData(1.5)]
+    [InlineData(2.0)]
+    public void RenderPage_ScaleFactors_RendersCorrectlyWithoutCrashing(double scale)
+    {
+        using var renderer = new PdfRenderer(MinimalValidPdf);
+        var (bgraBytes, width, height) = renderer.RenderPage(0, scale: scale);
+
+        Assert.NotEmpty(bgraBytes);
+        Assert.True(width > 0);
+        Assert.True(height > 0);
+        Assert.Equal(width * height * 4, bgraBytes.Length);
+    }
 }

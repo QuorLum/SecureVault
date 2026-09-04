@@ -1,12 +1,15 @@
 # SecureVault — Project Progress
 
-## Current State: First-Run Onboarding, In-Page Vault Creation & Taskbar Icon Overhaul Complete (All 130 Tests Passing)
-- **Current Milestone:** First-Run Onboarding, In-Page Vault Creation & Taskbar Icon Overhaul — **COMPLETE**
-- **Branch:** `feat/onboarding-ux-and-vault-creation`
+## Current State: Windows Installation Wizard & Application Stability Hardening Complete (All 142 Tests Passing)
+- **Current Milestone:** Windows Installation Wizard & Application Stability Hardening — **COMPLETE**
+- **Branch:** `feat/installer-and-stability-fixes`
 - **Environment:** Isolated .NET 8 SDK (8.0.424) in `$env:USERPROFILE\.dotnet`
 - **Activation:** Run `. .\activate.ps1` in PowerShell to set `DOTNET_ROOT` and `PATH`
-- **Test Results:** 130 / 130 Passed (100% success rate across all unit, integration, and onboarding workflow tests)
-- **Single-File Binary:** `publish/SecureVault.exe` (447.6 MB self-contained single-file executable, verified responding)
+- **Test Results:** 142 / 142 Passed (100% success rate across all unit, integration, and installer workflow tests)
+- **Single-File Binaries:**
+  - Application: `publish/SecureVault.exe` (593.65 MB self-contained single-file executable, verified responding)
+  - Installer: `publish/SecureVault-Setup.exe` (154.41 MB self-contained single-file wizard, verified responding)
+  - Release Archive: `publish/SecureVault-v1.0.0-win-x64.zip` (300.86 MB)
 
 ---
 
@@ -343,4 +346,45 @@
 - [x] **Single-File Packaging Verification:**
   - Verified `scripts/publish-single-file.ps1` publishes `publish/SecureVault.exe` (447.6 MB) and `publish/SecureVault-v1.0.0-win-x64.zip` (191.4 MB).
   - Validated process execution, HWND allocation, and responsive WinUI message pump.
+
+---
+
+### Windows Installation Wizard & Application Stability Hardening
+- [x] **Trimming & JSON Reflection Serialization Hardening:**
+  - Disabled `PublishTrimmed` (`False`) and set `JsonSerializerIsReflectionEnabledByDefault=true` in `SecureVault.App.csproj`.
+  - Created compile-time trim-safe `SecureVaultJsonContext` with `[JsonSerializable]` source generator attributes for `SettingsData`, `NoteDocument`, `NoteFormat`, `VaultChainManifest`, and `BackupManifest`.
+  - Converted `AppSettingsService`, `NoteDocument`, `VaultChainManifest`, and `BackupManifest` to use `SecureVaultJsonContext`, eliminating silent `AppSettingsService.Save()` failures and auto-save crashes.
+- [x] **Core Application Stability Fixes:**
+  - `PdfRenderer.cs`: Preserved original `_pdfBytes` and passed `_pdfBytes` with scaled `PageDimensions` to `DocLib.Instance.GetDocReader`, completely resolving the PDFium zoom crash.
+  - `NotesEditorViewModel.cs`: Fixed auto-save entry reference bug: captures updated `IndexEntry` on save, updates `_currentEntry`, and deletes obsolete GUID, preventing duplicate note accumulation and missing-GUID errors. Added safe auto-save try/catch error handling.
+  - `PhotoViewerViewModel.cs`: Wrapped image decoding, rotation, and EXIF extraction in robust try/catch blocks with clean fallback states, preventing unhandled crash on unsupported or corrupted files.
+  - `FileListView.xaml.cs` & `TimelineView.xaml.cs`: Wrapped `async void` event handlers in try/catch blocks; hooked `CollectionChanged` on `Files` so timeline groups dynamically reflect additions, deletions, and updates.
+  - `App.xaml.cs`: Enhanced global unhandled exception handling with persistent timestamped logging to `%LOCALAPPDATA%\SecureVault\logs\crash.log`.
+- [x] **Encrypted Cache & UIState Persistence Integration:**
+  - Connected `VaultCache` instance in `VaultManager` derived from master key.
+  - Implemented `SaveCacheSnapshot` in `VaultManager` and wired `MainLibraryViewModel` to restore and persist sort field, sort direction, view mode, category, and folder path across sessions.
+- [x] **Windows Installation Wizard Subsystem (`SecureVault.Installer`):**
+  - Created standalone setup wizard `SecureVault-Setup.exe` built in .NET 8 Windows Forms with sleek Obsidian/Indigo dark theme.
+  - **Welcome & License:** Interactive agreement review.
+  - **Destination Selection:** Default `%LOCALAPPDATA%\Programs\SecureVault` with free disk space calculation.
+  - **Configurable Options:**
+    - [x] Create Desktop Shortcut (Home Screen)
+    - [x] Create Start Menu Shortcut
+    - [x] Associate `.vault` file extension with SecureVault
+    - [x] Register in Windows Installed Apps (Add/Remove Programs)
+  - **Native COM Shortcuts (`IShellLinkW` / `IPersistFile`):** Creates valid Windows `.lnk` shortcuts with target executable, working directory, icon location, and description without relying on external script hosts.
+  - **Registry Service:** Sets user-level HKCU registry keys for `.vault` file type, default icon, open command, and full Add/Remove Programs uninstall registration.
+  - **Uninstaller (`/uninstall`):** Integrated uninstaller that cleanly removes shortcuts, registry keys, and program directory while preserving user `.vault` data containers.
+  - Added standard Inno Setup compilation script `installer/SecureVault.iss`.
+- [x] **Automated Test Suite Expansion:**
+  - Added `JsonSourceGenTests.cs` (roundtrip serialization of `SettingsData`, `NoteDocument`, `BackupManifest`, `VaultChainManifest`).
+  - Added `PdfRendererScalingTests` to `PdfRendererTests.cs` (multi-scale page rendering at 0.5x, 1.0x, 1.5x, 2.0x).
+  - Added `NotesAutoSaveWorkflowTests.cs` (simulating 5 consecutive auto-save cycles, verifying single active entry invariant and zero duplicate files).
+  - Added `InstallerServicesTests.cs` (default options, registry creation/reading under HKCU, file association formatting).
+  - **Total Test Results: 142 / 142 Passed (100% success rate)**.
+- [x] **Packaging Pipeline Expansion (`scripts/publish-single-file.ps1`):**
+  - Updated packaging script to build both `SecureVault.exe` (593.65 MB) and `SecureVault-Setup.exe` (154.41 MB).
+  - Generates companion SHA-256 checksums and release zip archive `SecureVault-v1.0.0-win-x64.zip` (300.86 MB).
+  - Verified host execution: both application and setup wizard initialize, respond to Windows messages, and execute without errors.
+
 
