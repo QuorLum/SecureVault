@@ -225,9 +225,10 @@ public sealed class VaultManager : IDisposable
         return await Task.Run(() =>
         {
             var fileLock = new VaultFileLock(fullPath);
+            FileStream? stream = null;
             try
             {
-                var stream = new FileStream(fullPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                stream = new FileStream(fullPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
                 var header = VaultHeader.ReadFrom(stream);
 
                 var masterKey = KeyWrapping.UnwrapWithPassword(
@@ -251,6 +252,7 @@ public sealed class VaultManager : IDisposable
             }
             catch
             {
+                stream?.Dispose();
                 fileLock.Dispose();
                 throw;
             }
@@ -276,9 +278,10 @@ public sealed class VaultManager : IDisposable
             byte[] recoverySeed = RecoveryKeyGenerator.WordsToSeed(recoveryWords);
 
             var fileLock = new VaultFileLock(fullPath);
+            FileStream? stream = null;
             try
             {
-                var stream = new FileStream(fullPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                stream = new FileStream(fullPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
                 var header = VaultHeader.ReadFrom(stream);
 
                 var masterKey = KeyWrapping.UnwrapWithRecoveryKey(header.KeyData, recoverySeed);
@@ -297,6 +300,7 @@ public sealed class VaultManager : IDisposable
             }
             catch
             {
+                stream?.Dispose();
                 fileLock.Dispose();
                 throw;
             }

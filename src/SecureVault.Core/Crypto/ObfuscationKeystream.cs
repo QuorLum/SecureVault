@@ -14,6 +14,9 @@ public sealed class ObfuscationKeystream : IDisposable
 {
     private readonly Aes _aes;
     private readonly ICryptoTransform _encryptor;
+    private readonly byte[] _counterBlock = new byte[16];
+    private readonly byte[] _keystreamBlock = new byte[16];
+    private readonly object _lock = new();
     private bool _disposed;
 
     public ObfuscationKeystream(SecureBuffer masterKey, Guid fileId, ReadOnlySpan<byte> fileSalt)
@@ -53,6 +56,7 @@ public sealed class ObfuscationKeystream : IDisposable
     /// <summary>
     /// Applies XOR keystream in-place to the target buffer, starting from the given byte offset.
     /// Calling this method again with the same offset reverses the obfuscation.
+    /// Eliminates all intermediate heap allocations: uses reusable pre-allocated blocks.
     /// </summary>
     public void ApplyInPlace(Span<byte> data, long streamOffset)
     {
@@ -61,39 +65,34 @@ public sealed class ObfuscationKeystream : IDisposable
         if (data.IsEmpty)
             return;
 
-        Span<byte> counterBlock = stackalloc byte[16];
-        Span<byte> keystreamBlock = stackalloc byte[16];
-
-        long currentOffset = streamOffset;
-        int remaining = data.Length;
-        int bufferIndex = 0;
-
-        while (remaining > 0)
+        lock (_lock)
         {
-            long blockIndex = currentOffset / 16;
-            int offsetInBlock = (int)(currentOffset % 16);
+            long currentOffset = streamOffset;
+            int remaining = data.Length;
+            int bufferIndex = 0;
 
-            // Construct 16-byte counter block (Big-endian block index)
-            counterBlock.Clear();
-            BinaryPrimitives.WriteInt64BigEndian(counterBlock[8..], blockIndex);
-
-            // Encrypt counter block using ECB to generate 16 bytes of keystream
-            _encryptor.TransformBlock(counterBlock.ToArray(), 0, 16, keystreamBlock.ToArray(), 0);
-
-            // Re-encrypt directly into keystream buffer
-            byte[] inArr = counterBlock.ToArray();
-            byte[] outArr = new byte[16];
-            _encryptor.TransformBlock(inArr, 0, 16, outArr, 0);
-
-            int bytesToXor = Math.Min(remaining, 16 - offsetInBlock);
-            for (int i = 0; i < bytesToXor; i++)
+            while (remaining > 0)
             {
-                data[bufferIndex + i] ^= outArr[offsetInBlock + i];
-            }
+                long blockIndex = currentOffset / 16;
+                int offsetInBlock = (int)(currentOffset % 16);
 
-            remaining -= bytesToXor;
-            bufferIndex += bytesToXor;
-            currentOffset += bytesToXor;
+                // Construct 16-byte counter block (Big-endian block index)
+                Array.Clear(_counterBlock, 0, 16);
+                BinaryPrimitives.WriteInt64BigEndian(_counterBlock.AsSpan(8, 8), blockIndex);
+
+                // Encrypt counter block using ECB to generate 16 bytes of keystream
+                _encryptor.TransformBlock(_counterBlock, 0, 16, _keystreamBlock, 0);
+
+                int bytesToXor = Math.Min(remaining, 16 - offsetInBlock);
+                for (int i = 0; i < bytesToXor; i++)
+                {
+                    data[bufferIndex + i] ^= _keystreamBlock[offsetInBlock + i];
+                }
+
+                remaining -= bytesToXor;
+                bufferIndex += bytesToXor;
+                currentOffset += bytesToXor;
+            }
         }
     }
 
@@ -102,8 +101,13 @@ public sealed class ObfuscationKeystream : IDisposable
         if (_disposed)
             return;
 
-        _encryptor.Dispose();
-        _aes.Dispose();
-        _disposed = true;
+        lock (_lock)
+        {
+            CryptographicOperations.ZeroMemory(_counterBlock);
+            CryptographicOperations.ZeroMemory(_keystreamBlock);
+            _encryptor.Dispose();
+            _aes.Dispose();
+            _disposed = true;
+        }
     }
 }
