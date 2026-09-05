@@ -1,6 +1,7 @@
 using System.Text;
 using SecureVault.Core;
 using SecureVault.Core.Backup;
+using SecureVault.Core.Format;
 using Xunit;
 
 namespace SecureVault.Core.Tests;
@@ -41,7 +42,7 @@ public class BackupVerifierTests : IDisposable
 
         Assert.True(report.IsHealthy);
         Assert.True(report.IsComplete);
-        Assert.Equal(1, report.FormatVersion);
+        Assert.Equal(VaultConstants.CurrentFormatVersion, report.FormatVersion);
         Assert.NotEqual(Guid.Empty, report.VaultUUID);
         Assert.Empty(report.Issues);
     }

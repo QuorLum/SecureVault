@@ -199,7 +199,16 @@ public static class RecoveryScanner
                         try
                         {
                             using var aesGcm = new AesGcm(enc.SecureModeKey.AsReadOnlySpan(), 16);
-                            aesGcm.Decrypt(nonce, repairedPayload, authTag, plaintextChunk);
+                            byte[] aadV2 = ChunkWriter.ComputeAssociatedData(blockHeader.FileGuid, seq, 2);
+                            try
+                            {
+                                aesGcm.Decrypt(nonce, repairedPayload, authTag, plaintextChunk, aadV2);
+                            }
+                            catch (AuthenticationTagMismatchException)
+                            {
+                                // Fallback to format version 1 without AAD
+                                aesGcm.Decrypt(nonce, repairedPayload, authTag, plaintextChunk, ReadOnlySpan<byte>.Empty);
+                            }
 
                             uint actualCrc = System.IO.Hashing.Crc32.HashToUInt32(plaintextChunk);
                             if (actualCrc != expectedCrc)

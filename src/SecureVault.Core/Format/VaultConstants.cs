@@ -18,7 +18,8 @@ public enum CompressionType : byte
 public static class VaultConstants
 {
     public const int HeaderSize = 572; // 0x023C bytes
-    public const ushort CurrentFormatVersion = 1;
+    public const ushort CurrentFormatVersion = 2;
+    public const ushort LegacyFormatVersion = 1;
     public const int DefaultChunkSize = 1024 * 1024; // 1 MB
     public const int ChunkHeaderSize = 39; // 0x0027 bytes
     public const int BlockHeaderSize = 66; // 0x0042 bytes

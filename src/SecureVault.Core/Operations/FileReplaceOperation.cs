@@ -55,14 +55,15 @@ public sealed class FileReplaceOperation
                 ulong appendOffset = _vault.Header.PrimaryIndexOffset > 0 ? _vault.Header.PrimaryIndexOffset : (ulong)_vault.StreamLength;
                 _vault.Stream.Seek((long)appendOffset, SeekOrigin.Begin);
 
-                var addOp = new FileAddOperation(_vault.Stream, _vault.Encryption, _vault.RsCodec);
+                var addOp = new FileAddOperation(_vault.Stream, _vault.Encryption, _vault.RsCodec, _vault.Header.FormatVersion);
                 var newFileRecord = await addOp.ExecuteAsync(
                     effectiveStream,
                     entry.FileName,
                     entry.VirtualFolderPath,
                     entry.ProtectionMode,
                     progress,
-                    ct);
+                    ct,
+                    existingFileGuid: entry.FileGuid);
 
                 // Atomically transfer new chunks, size, salt, and hashes into existing entry
                 entry.OriginalSize = newFileRecord.OriginalSize;

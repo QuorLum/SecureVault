@@ -407,7 +407,7 @@ public sealed class VaultManager : IDisposable
                 ulong appendOffset = _header.PrimaryIndexOffset > 0 ? _header.PrimaryIndexOffset : (ulong)_stream.Length;
                 _stream.Seek((long)appendOffset, SeekOrigin.Begin);
 
-                var operation = new FileAddOperation(_stream, _encryption, _rsCodec);
+                var operation = new FileAddOperation(_stream, _encryption, _rsCodec, _header.FormatVersion);
                 var entry = await operation.ExecuteAsync(effectiveStream, fileName, virtualPath, mode, progress, cancellationToken);
 
                 _index.Entries.Add(entry);
@@ -435,7 +435,7 @@ public sealed class VaultManager : IDisposable
         EnsureUnlocked();
         ArgumentNullException.ThrowIfNull(entry);
 
-        var reader = new ChunkReader(_stream, _encryption.SecureModeKey, _encryption.ObfuscationKey, _rsCodec, _streamLock);
+        var reader = new ChunkReader(_stream, _encryption.SecureModeKey, _encryption.ObfuscationKey, _rsCodec, _streamLock, _header.FormatVersion);
         return new VaultFileStream(entry, reader);
     }
 

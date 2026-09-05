@@ -326,7 +326,7 @@ public sealed class VaultChainManager : IDisposable
             ulong appendOffset = part.Header.LocalIndexOffset > 0 ? part.Header.LocalIndexOffset : (ulong)part.Stream.Length;
             part.Stream.Seek((long)appendOffset, SeekOrigin.Begin);
 
-            var operation = new FileAddOperation(part.Stream, _masterVault.Encryption, _masterVault.RsCodec);
+            var operation = new FileAddOperation(part.Stream, _masterVault.Encryption, _masterVault.RsCodec, _masterVault.Header.FormatVersion);
             entry = await operation.ExecuteAsync(sourceStream, fileName, virtualPath, mode, progress, ct);
             entry.PartIndex = targetPartIndex;
 
@@ -363,7 +363,7 @@ public sealed class VaultChainManager : IDisposable
                 $"Vault part {entry.PartIndex} ('{missingName}') is missing. Re-attach the vault part to access '{entry.FileName}'.");
         }
 
-        var reader = new ChunkReader(part.Stream, _masterVault.Encryption.SecureModeKey, _masterVault.Encryption.ObfuscationKey, _masterVault.RsCodec, part.StreamLock);
+        var reader = new ChunkReader(part.Stream, _masterVault.Encryption.SecureModeKey, _masterVault.Encryption.ObfuscationKey, _masterVault.RsCodec, part.StreamLock, _masterVault.Header.FormatVersion);
         return new VaultFileStream(entry, reader);
     }
 
@@ -418,8 +418,8 @@ public sealed class VaultChainManager : IDisposable
             ulong appendOffset = _masterVault.Header.PrimaryIndexOffset > 0 ? _masterVault.Header.PrimaryIndexOffset : (ulong)_masterVault.Stream.Length;
             _masterVault.Stream.Seek((long)appendOffset, SeekOrigin.Begin);
 
-            var operation = new FileAddOperation(_masterVault.Stream, _masterVault.Encryption, _masterVault.RsCodec);
-            var newEntry = await operation.ExecuteAsync(ms, entry.FileName, entry.VirtualFolderPath, entry.ProtectionMode, progress, ct);
+            var operation = new FileAddOperation(_masterVault.Stream, _masterVault.Encryption, _masterVault.RsCodec, _masterVault.Header.FormatVersion);
+            var newEntry = await operation.ExecuteAsync(ms, entry.FileName, entry.VirtualFolderPath, entry.ProtectionMode, progress, ct, existingFileGuid: entry.FileGuid);
 
             // Copy metadata
             entry.PartIndex = 0;
@@ -436,8 +436,8 @@ public sealed class VaultChainManager : IDisposable
             ulong appendOffset = targetPart.Header.LocalIndexOffset > 0 ? targetPart.Header.LocalIndexOffset : (ulong)targetPart.Stream.Length;
             targetPart.Stream.Seek((long)appendOffset, SeekOrigin.Begin);
 
-            var operation = new FileAddOperation(targetPart.Stream, _masterVault.Encryption, _masterVault.RsCodec);
-            var newEntry = await operation.ExecuteAsync(ms, entry.FileName, entry.VirtualFolderPath, entry.ProtectionMode, progress, ct);
+            var operation = new FileAddOperation(targetPart.Stream, _masterVault.Encryption, _masterVault.RsCodec, _masterVault.Header.FormatVersion);
+            var newEntry = await operation.ExecuteAsync(ms, entry.FileName, entry.VirtualFolderPath, entry.ProtectionMode, progress, ct, existingFileGuid: entry.FileGuid);
 
             entry.PartIndex = targetPartIndex;
             entry.Chunks = newEntry.Chunks;

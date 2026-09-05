@@ -16,19 +16,38 @@ public sealed class ChunkWriter
     private readonly SecureBuffer _obfuscationKey;
     private readonly ReedSolomonCodec _rsCodec;
     private readonly ProtectionMode _protectionMode;
+    private readonly ushort _formatVersion;
 
     public ChunkWriter(
         Stream vaultStream,
         SecureBuffer secureModeKey,
         SecureBuffer obfuscationKey,
         ReedSolomonCodec rsCodec,
-        ProtectionMode protectionMode = ProtectionMode.SecureMode)
+        ProtectionMode protectionMode = ProtectionMode.SecureMode,
+        ushort formatVersion = VaultConstants.CurrentFormatVersion)
     {
         _stream = vaultStream ?? throw new ArgumentNullException(nameof(vaultStream));
         _secureModeKey = secureModeKey ?? throw new ArgumentNullException(nameof(secureModeKey));
         _obfuscationKey = obfuscationKey ?? throw new ArgumentNullException(nameof(obfuscationKey));
         _rsCodec = rsCodec ?? throw new ArgumentNullException(nameof(rsCodec));
         _protectionMode = protectionMode;
+        _formatVersion = formatVersion;
+    }
+
+    public const int AadSize = 22;
+
+    public static byte[] ComputeAssociatedData(Guid fileGuid, uint chunkSequence, ushort formatVersion)
+    {
+        byte[] aad = new byte[AadSize];
+        BuildAssociatedData(aad, fileGuid, chunkSequence, formatVersion);
+        return aad;
+    }
+
+    public static void BuildAssociatedData(Span<byte> destination, Guid fileGuid, uint chunkSequence, ushort formatVersion)
+    {
+        fileGuid.TryWriteBytes(destination[..16]);
+        BinaryPrimitives.WriteUInt32LittleEndian(destination.Slice(16, 4), chunkSequence);
+        BinaryPrimitives.WriteUInt16LittleEndian(destination.Slice(20, 2), formatVersion);
     }
 
     public ChunkIndexEntry WriteChunk(
@@ -48,7 +67,16 @@ public sealed class ChunkWriter
             // CRITICAL FIX: Fresh 12-byte random nonce generated on every write to avoid nonce reuse
             RandomNumberGenerator.Fill(nonce);
             using var aes = new AesGcm(_secureModeKey.AsReadOnlySpan(), 16);
-            aes.Encrypt(nonce, plaintext, payload, authTag);
+            if (_formatVersion >= 2)
+            {
+                Span<byte> aad = stackalloc byte[AadSize];
+                BuildAssociatedData(aad, fileGuid, chunkSequence, _formatVersion);
+                aes.Encrypt(nonce, plaintext, payload, authTag, aad);
+            }
+            else
+            {
+                aes.Encrypt(nonce, plaintext, payload, authTag);
+            }
         }
         else
         {
@@ -98,7 +126,8 @@ public sealed class ChunkWriter
         SecureBuffer secureModeKey,
         SecureBuffer obfuscationKey,
         ReedSolomonCodec rsCodec,
-        ProtectionMode protectionMode)
+        ProtectionMode protectionMode,
+        ushort formatVersion = VaultConstants.CurrentFormatVersion)
     {
         uint crc32 = Crc32.HashToUInt32(plaintext);
 
@@ -110,7 +139,16 @@ public sealed class ChunkWriter
         {
             RandomNumberGenerator.Fill(nonce);
             using var aes = new AesGcm(secureModeKey.AsReadOnlySpan(), 16);
-            aes.Encrypt(nonce, plaintext, payload, authTag);
+            if (formatVersion >= 2)
+            {
+                Span<byte> aad = stackalloc byte[AadSize];
+                BuildAssociatedData(aad, fileGuid, chunkSequence, formatVersion);
+                aes.Encrypt(nonce, plaintext, payload, authTag, aad);
+            }
+            else
+            {
+                aes.Encrypt(nonce, plaintext, payload, authTag);
+            }
         }
         else
         {

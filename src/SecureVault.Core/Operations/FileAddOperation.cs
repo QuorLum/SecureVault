@@ -15,15 +15,18 @@ public sealed class FileAddOperation
     private readonly Stream _vaultStream;
     private readonly EncryptionService _encryption;
     private readonly ReedSolomonCodec _rsCodec;
+    private readonly ushort _formatVersion;
 
     public FileAddOperation(
         Stream vaultStream,
         EncryptionService encryption,
-        ReedSolomonCodec rsCodec)
+        ReedSolomonCodec rsCodec,
+        ushort formatVersion = VaultConstants.CurrentFormatVersion)
     {
         _vaultStream = vaultStream ?? throw new ArgumentNullException(nameof(vaultStream));
         _encryption = encryption ?? throw new ArgumentNullException(nameof(encryption));
         _rsCodec = rsCodec ?? throw new ArgumentNullException(nameof(rsCodec));
+        _formatVersion = formatVersion;
     }
 
     public async Task<IndexEntry> ExecuteAsync(
@@ -32,12 +35,13 @@ public sealed class FileAddOperation
         string virtualPath = "/",
         ProtectionMode mode = ProtectionMode.SecureMode,
         IProgress<double>? progress = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        Guid? existingFileGuid = null)
     {
         ArgumentNullException.ThrowIfNull(sourceStream);
         ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
 
-        Guid fileGuid = Guid.NewGuid();
+        Guid fileGuid = existingFileGuid ?? Guid.NewGuid();
         byte[] fileSalt = new byte[16];
         RandomNumberGenerator.Fill(fileSalt);
 
@@ -49,7 +53,7 @@ public sealed class FileAddOperation
 
         ulong firstChunkOffset = (ulong)_vaultStream.Position;
         long currentWriteOffset = _vaultStream.Position;
-        var chunkWriter = new ChunkWriter(_vaultStream, _encryption.SecureModeKey, _encryption.ObfuscationKey, _rsCodec, mode);
+        var chunkWriter = new ChunkWriter(_vaultStream, _encryption.SecureModeKey, _encryption.ObfuscationKey, _rsCodec, mode, _formatVersion);
         var chunkEntries = new List<ChunkIndexEntry>();
 
         using var sha256 = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);

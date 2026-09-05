@@ -15,12 +15,14 @@ public sealed class ParallelChunkPipeline
     private readonly SecureBuffer _obfuscationKey;
     private readonly ReedSolomonCodec _rsCodec;
     private readonly int _parallelism;
+    private readonly ushort _formatVersion;
 
     public ParallelChunkPipeline(
         SecureBuffer secureKey,
         SecureBuffer obfuscationKey,
         ReedSolomonCodec? rsCodec = null,
-        int? parallelism = null)
+        int? parallelism = null,
+        ushort formatVersion = VaultConstants.CurrentFormatVersion)
     {
         ArgumentNullException.ThrowIfNull(secureKey);
         ArgumentNullException.ThrowIfNull(obfuscationKey);
@@ -29,6 +31,7 @@ public sealed class ParallelChunkPipeline
         _obfuscationKey = obfuscationKey;
         _rsCodec = rsCodec ?? new ReedSolomonCodec();
         _parallelism = Math.Max(1, parallelism ?? Environment.ProcessorCount);
+        _formatVersion = formatVersion;
     }
 
     /// <summary>
@@ -102,7 +105,8 @@ public sealed class ParallelChunkPipeline
                     _secureKey,
                     _obfuscationKey,
                     _rsCodec,
-                    protectionMode);
+                    protectionMode,
+                    _formatVersion);
 
                 await processedChannel.Writer.WriteAsync(new ProcessedChunkItem(item.Index, processed, item.Payload.Length), ct);
             }

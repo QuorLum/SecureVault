@@ -17,6 +17,7 @@ public sealed class ChunkReader
     private readonly SecureBuffer _obfuscationKey;
     private readonly ReedSolomonCodec _rsCodec;
     private readonly SemaphoreSlim? _streamLock;
+    private readonly ushort _formatVersion;
 
     internal Stream UnderlyingStream => _stream;
 
@@ -25,13 +26,15 @@ public sealed class ChunkReader
         SecureBuffer secureModeKey,
         SecureBuffer obfuscationKey,
         ReedSolomonCodec rsCodec,
-        SemaphoreSlim? streamLock = null)
+        SemaphoreSlim? streamLock = null,
+        ushort formatVersion = VaultConstants.CurrentFormatVersion)
     {
         _stream = vaultStream ?? throw new ArgumentNullException(nameof(vaultStream));
         _secureModeKey = secureModeKey ?? throw new ArgumentNullException(nameof(secureModeKey));
         _obfuscationKey = obfuscationKey ?? throw new ArgumentNullException(nameof(obfuscationKey));
         _rsCodec = rsCodec ?? throw new ArgumentNullException(nameof(rsCodec));
         _streamLock = streamLock;
+        _formatVersion = formatVersion;
     }
 
     public byte[] ReadChunk(
@@ -110,7 +113,16 @@ public sealed class ChunkReader
             try
             {
                 using var aes = new AesGcm(_secureModeKey.AsReadOnlySpan(), 16);
-                aes.Decrypt(nonce, repairedPayload, authTag, plaintext);
+                if (_formatVersion >= 2)
+                {
+                    Span<byte> aad = stackalloc byte[ChunkWriter.AadSize];
+                    ChunkWriter.BuildAssociatedData(aad, fileGuid, entry.ChunkSequence, _formatVersion);
+                    aes.Decrypt(nonce, repairedPayload, authTag, plaintext, aad);
+                }
+                else
+                {
+                    aes.Decrypt(nonce, repairedPayload, authTag, plaintext);
+                }
             }
             catch (CryptographicException ex)
             {
