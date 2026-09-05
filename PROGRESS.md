@@ -1,25 +1,38 @@
 # SecureVault — Project Progress
 
-## Current State: Comprehensive Final Gatekeeper Certification Audit (COMPLETE)
-- **Current Milestone:** Final Gatekeeper Certification Audit (All Binding Plan Amendments Executed) — **100% COMPLETE**
-- **Branch:** `throwaway/audit-repro`
-- **Environment:** Isolated .NET 8 SDK (8.0.424) in `$env:USERPROFILE\.dotnet`
-- **Activation:** Run `. .\activate.ps1` in PowerShell to set `DOTNET_ROOT` and `PATH`
-- **Build Status:** 0 errors, 0 warnings across all projects
-- **Test Results:** 208 / 208 Passed (100% success rate across all Core tests)
-- **Completed Deliverables:**
-  - **P-01 (Severity S1) [COMPLETE]**: AAD binding for AES-GCM chunks (`FileGuid ‖ ChunkSeq ‖ FormatVersion` = 22B) with FormatVersion bump (1 -> 2), migration strategy analysis, and byte-transplant repro test (`patches/P-01-aad-binding.patch`, `audit/patches/P-01-aad-binding.patch`).
-  - **P-02 (Severity S1) [COMPLETE]**: Auto-lock while viewers are open (closing Photo, Video, PDF, Notes, dialogs; stopping LibVLC media playback; releasing stream handles; encrypted auto-save notes) before disposing vault (`patches/P-02-autolock-viewers.patch`, `audit/patches/P-02-autolock-viewers.patch`).
-  - **P-03 (Severity S2) [COMPLETE]**: Zero and clear in-memory index, cache, and filenames on Lock (in-place `char*` string zeroing + `ZeroingBufferWriter` to eliminate ArrayPool retention; verified 0 canaries in memory) (`patches/P-03-index-ram-retention.patch`, `audit/patches/P-03-index-ram-retention.patch`).
-  - **M-01 (Forensics) [COMPLETE]**: Captured full memory dumps across all 5 mandatory states via `dotnet-dump` and performed binary artifact scan across all dumps; documented in `audit/MEMORY_FORENSICS.md`.
-  - **M-05 (Test Vectors) [COMPLETE]**: All 16 test vectors wired and executing in CI test suite (`tests/SecureVault.Core.Tests/TestVectorExecutionTests.cs`). Fixed 24th recovery word checksum typo in `tests/vectors/key-wrapping.json`.
-  - **M-06 (Status Reconciliation) [COMPLETE]**: Bidirectional reconciliation table for all 308 master feature IDs across categories A–O documented in `audit/STATUS_RECONCILIATION.md`.
-  - **M-07 (Open Questions) [COMPLETE]**: All 13 architecture open questions analyzed with code evidence, trade-offs, and verification notes in `audit/OPEN_QUESTIONS.md`.
-  - **M-02 (Kill Injection) [COMPLETE]**: Process kill-injection across 10 write phases at 3 random offsets each (30 crash points) passing 100% in `tests/SecureVault.Core.Tests/KillInjectionTests.cs`; eliminated handle leak; documented in `audit/KILL_INJECTION.md`.
-  - **M-08 (Keystream Optimization & Benchmark) [COMPLETE]**: Removed dead duplicate ECB transform and pre-allocated counter blocks; achieved bit-identical keystream generation with 0 GC heap allocations in hot loop (`tests/SecureVault.Core.Tests/KeystreamBenchmarkTests.cs`).
-  - **M-09 (Edge Probes) [COMPLETE]**: Unicode NFC/NFD, Cyrillic, CJK, emoji, path traversal sanitization, dead-PID file lock reclamation, clock skew tolerance, and 200GB container boundary enforcement tested in `tests/SecureVault.Core.Tests/EdgeProbeTests.cs`.
-  - **M-03 / M-04 (UI & Accessibility Matrix) [COMPLETE]**: Full 20-component matrix and WCAG AAA compliance documented in `audit/UI_MATRIX/UI_MATRIX.md`.
-  - **Final Gatekeeper Certification Report [COMPLETE]**: Full audit report and Go/No-Go verdict documented in `audit/REPORT.md`. All criteria verified for production shipment.
+## Current State: Emergency Usability Fix Directive (IN PROGRESS — NO-GO / BLOCKED)
+- **Directive Status:** Audit verdict revoked to **NO-GO / BLOCKED** following real-machine installation failure report.
+- **Branch:** `main`
+- **Active Task:** Emergency Usability Fix & Runtime UI Automation Certification.
+- **Blockers:**
+  - **BLK-1 (S0):** Installer does not install app on system.
+  - **BLK-2 (S0):** Opening ANY file inside vault does nothing (no viewer appears).
+  - **BLK-3 (S0):** Notes section unusable (create/edit/save/read notes fails).
+  - **BLK-4 (S0):** Clicking gear (Settings) icon crashes application.
+
+### Current Progress:
+1. **Global Crash Instrumentation (Step 1) [COMPLETE]**:
+   - `UiActionTrace.cs`: 50-item ring buffer tracking views, user actions, and sanitizing secrets/passwords/keys.
+   - `CrashLog.cs`: Writing structured reports to `%LOCALAPPDATA%\SecureVault\logs\crash-YYYYMMDD-HHmmss-*.log` and rolling `app.log` with environment info, modules, full inner exception recursion, and UI history.
+   - `CrashReportWindow.cs`: Code-only resilient crash window with emergency vault locking, key zeroization, "Copy Details", "Open Log Folder", and exit controls.
+   - Global exception hooks wired in `App.xaml.cs` (`UnhandledException`, `AppDomain.UnhandledException`, `TaskScheduler.UnobservedTaskException`, `FirstChanceException`, and `DebugSettings.BindingFailed`).
+   - Sample crash log delivered to `audit/EVIDENCE/00-instrumentation/sample-crash.log`.
+
+2. **BLK-4 Reproduction & Root Cause Identification [COMPLETE]**:
+   - Captured real-world runtime crash in running `SecureVault.exe`:
+     `System.Runtime.InteropServices.COMException (0x80004005): Cannot find a resource with the given key: StringToVisibleConverter.`
+     at `SecureVault.App.Views.SettingsPage.SettingsPage_obj1_Bindings.LookupConverter(String key)`
+     at `SecureVault.App.Views.SettingsPage.SettingsPage_obj1_Bindings.Update_ViewModel_StatusMessage(...)`
+     Triggered by line 22 of `SettingsPage.xaml`.
+   - Identified additional missing converter `BoolToInvertedConverter` affecting `CompactionDialog.xaml` and `BackupRestoreDialog.xaml`.
+
+3. **Next Immediate Steps**:
+   - Commit BLK-4 fix (`fix(BLK-4): missing StringToVisibleConverter and BoolToInvertedConverter resource definitions`) with stack trace in commit message.
+   - Trace and diagnose BLK-2 (File open does nothing).
+   - Trace and diagnose BLK-3 (Notes section unusable).
+   - Trace and diagnose BLK-1 (Installer fails to install).
+   - Set up FlaUI test project `tests/SecureVault.UI.Tests/` with 10 smoke tests.
+
 
 ---
 

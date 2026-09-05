@@ -18,7 +18,8 @@ public static class Program
         {
             try
             {
-                File.WriteAllText("startup_crash.log", $"[{DateTime.Now:HH:mm:ss.fff}] UNHANDLED: {e.ExceptionObject}\n");
+                var ex = e.ExceptionObject as Exception;
+                Diagnostics.CrashLog.Write("Program.Main.UnhandledException", ex);
             }
             catch { }
         };

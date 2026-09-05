@@ -1,79 +1,106 @@
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using Microsoft.UI.Xaml.Shapes;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using SecureVault.App.Diagnostics;
 
 namespace SecureVault.App;
 
 /// <summary>
 /// Provides application-specific behavior to supplement the default Application class.
+/// Incorporates global crash logging, binding error diagnostics, and unhandled exception reporting.
 /// </summary>
 public partial class App : Application
 {
     public static Window CurrentWindow { get; private set; } = null!;
     public static string? StartupVaultPath { get; set; }
     private Window? _window;
-    
-    /// <summary>
-    /// Initializes the singleton application object.  This is the first line of authored code
-    /// executed, and as such is the logical equivalent of main() or WinMain().
-    /// </summary>
+
     public App()
     {
+        // 1. AppDomain Unhandled Exceptions
         AppDomain.CurrentDomain.UnhandledException += (s, e) =>
         {
-            LogCrash("AppDomain.UnhandledException", e.ExceptionObject as Exception);
+            var ex = e.ExceptionObject as Exception;
+            string report = CrashLog.Write("AppDomain.UnhandledException", ex);
+            CrashReportWindow.ShowModal("AppDomain.UnhandledException", ex, report);
         };
 
+        // 2. TaskScheduler Unobserved Task Exceptions
         TaskScheduler.UnobservedTaskException += (s, e) =>
         {
-            LogCrash("TaskScheduler.UnobservedTaskException", e.Exception);
+            CrashLog.Write("TaskScheduler.UnobservedTaskException", e.Exception);
             e.SetObserved();
         };
 
+        // 3. WinUI Xaml Unhandled Exceptions
         this.UnhandledException += (s, e) =>
         {
-            LogCrash("Xaml.UnhandledException", e.Exception);
+            string report = CrashLog.Write("Xaml.UnhandledException", e.Exception);
+            CrashReportWindow.ShowModal("Xaml.UnhandledException", e.Exception, report);
+            e.Handled = true;
         };
 
+        // 4. First-chance exception tracing for active diagnostics
+#if DEBUG
+        AppDomain.CurrentDomain.FirstChanceException += (s, e) =>
+        {
+            // Skip noisy COM/RPC internal probes
+            var exType = e.Exception.GetType().FullName ?? "";
+            if (!exType.StartsWith("System.Runtime.InteropServices.COMException") &&
+                !exType.StartsWith("System.IO.FileNotFoundException"))
+            {
+                CrashLog.Trace("FirstChance", e.Exception);
+            }
+        };
+#endif
+
+        // 5. WinUI Binding Failures
+        try
+        {
+            DebugSettings.BindingFailed += (s, e) =>
+            {
+                CrashLog.LogBindingError(e.Message);
+            };
+        }
+        catch { }
+
+        CrashLog.LogInfo("App ctor: Initializing components...");
         InitializeComponent();
     }
 
-    private static void LogCrash(string source, Exception? ex)
+    private void ValidateResources()
     {
         try
         {
-            string logDir = System.IO.Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "SecureVault", "logs");
-            System.IO.Directory.CreateDirectory(logDir);
-            string logFile = System.IO.Path.Combine(logDir, "crash.log");
-            string entry = $"[{DateTime.UtcNow:O}] [{source}] {ex?.Message}\n{ex?.StackTrace}\n\n";
-            System.IO.File.AppendAllText(logFile, entry);
+            if (Resources?.MergedDictionaries != null)
+            {
+                CrashLog.LogInfo($"MergedDictionaries count: {Resources.MergedDictionaries.Count}");
+                foreach (var md in Resources.MergedDictionaries)
+                {
+                    CrashLog.LogInfo($"MergedDictionary source: {md.Source?.ToString() ?? "inline"}, Count: {md.Count}");
+                }
+            }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            CrashLog.LogError("Failed to enumerate MergedDictionaries", ex);
+        }
     }
 
-    /// <summary>
-    /// Invoked when the application is launched.
-    /// </summary>
-    /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
+        CrashLog.LogInfo("OnLaunched: Initializing MainWindow...");
+        UiActionTrace.Record("AppLaunched");
+
         _window = new MainWindow();
         CurrentWindow = _window;
         _window.Activate();
+        CrashLog.LogInfo("OnLaunched: MainWindow activated.");
+        ValidateResources();
 
         // Non-blocking background shell registration when run in production
         if (!Services.ShellIntegrationService.IsRunningInDevelopmentEnvironment())
@@ -84,7 +111,10 @@ public partial class App : Application
                 {
                     Services.ShellIntegrationService.RegisterFileAssociation();
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    CrashLog.LogWarning($"Shell file association registration failed: {ex.Message}");
+                }
             });
         }
     }

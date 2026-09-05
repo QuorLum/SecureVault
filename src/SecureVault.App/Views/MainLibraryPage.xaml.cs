@@ -5,6 +5,7 @@ using SecureVault.App.Services;
 using SecureVault.App.ViewModels;
 using SecureVault.Core;
 using SecureVault.Core.Format;
+using SecureVault.Core.Security;
 using Windows.Storage.Pickers;
 
 namespace SecureVault.App.Views;
