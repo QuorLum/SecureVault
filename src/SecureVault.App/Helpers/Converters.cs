@@ -1,3 +1,4 @@
+using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 
@@ -28,7 +29,7 @@ public sealed class BoolToOpacityConverter : IValueConverter
         return (value is bool b && b) ? 1.0 : 0.25;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotImplementedException();
+    public object ConvertBack(object value, Type targetType, object parameter, string language) => DependencyProperty.UnsetValue;
 }
 
 public sealed class BoolToPlayPauseGlyphConverter : IValueConverter
@@ -39,5 +40,34 @@ public sealed class BoolToPlayPauseGlyphConverter : IValueConverter
         return isPlaying ? "\uE769" : "\uE768"; // Pause vs Play glyph
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotImplementedException();
+    public object ConvertBack(object value, Type targetType, object parameter, string language) => DependencyProperty.UnsetValue;
+}
+
+public sealed class StringToVisibleConverter : IValueConverter
+{
+    public bool Invert { get; set; }
+
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        bool hasText = value is string s && !string.IsNullOrWhiteSpace(s);
+        if (Invert) hasText = !hasText;
+        return hasText ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language) => DependencyProperty.UnsetValue;
+}
+
+public sealed class BoolToInvertedConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        bool b = value is bool flag && flag;
+        return !b;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        bool b = value is bool flag && flag;
+        return !b;
+    }
 }

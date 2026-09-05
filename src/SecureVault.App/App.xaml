@@ -16,6 +16,8 @@
             <helpers:BoolToVisibilityConverter x:Key="BoolToCollapsedConverter" Invert="True" />
             <helpers:BoolToOpacityConverter x:Key="BoolToOpacityConverter" />
             <helpers:BoolToPlayPauseGlyphConverter x:Key="BoolToPlayPauseGlyphConverter" />
+            <helpers:StringToVisibleConverter x:Key="StringToVisibleConverter" Invert="False" />
+            <helpers:BoolToInvertedConverter x:Key="BoolToInvertedConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
