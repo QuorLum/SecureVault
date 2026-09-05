@@ -29,4 +29,10 @@ public sealed record ChunkIndexEntry
 
     [Key(6)]
     public required uint RSParityLength { get; init; }
+
+    public void ClearAndZero()
+    {
+        if (Nonce != null) System.Security.Cryptography.CryptographicOperations.ZeroMemory(Nonce);
+        if (AuthTag != null) System.Security.Cryptography.CryptographicOperations.ZeroMemory(AuthTag);
+    }
 }

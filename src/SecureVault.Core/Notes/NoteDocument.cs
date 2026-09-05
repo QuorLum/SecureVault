@@ -45,6 +45,15 @@ public sealed class NoteDocument
         return doc ?? new NoteDocument();
     }
 
+    public void ClearAndZero()
+    {
+        SecureVault.Core.Format.VaultIndex.WipeString(Title);
+        Title = string.Empty;
+
+        SecureVault.Core.Format.VaultIndex.WipeString(Content);
+        Content = string.Empty;
+    }
+
     public string RenderMarkdownToHtml()
     {
         if (string.IsNullOrWhiteSpace(Content))

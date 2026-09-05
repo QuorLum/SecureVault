@@ -63,8 +63,13 @@ public sealed class ChunkLruCache
                 var oldest = _lruList.Last;
                 if (oldest != null)
                 {
+                    ulong offsetToRemove = oldest.Value.ChunkOffset;
+                    if (oldest.Value.Data != null)
+                    {
+                        System.Security.Cryptography.CryptographicOperations.ZeroMemory(oldest.Value.Data);
+                    }
                     _lruList.RemoveLast();
-                    _map.Remove(oldest.Value.ChunkOffset);
+                    _map.Remove(offsetToRemove);
                 }
             }
 
@@ -79,6 +84,13 @@ public sealed class ChunkLruCache
     {
         lock (_lock)
         {
+            foreach (var node in _map.Values)
+            {
+                if (node.Value?.Data != null)
+                {
+                    System.Security.Cryptography.CryptographicOperations.ZeroMemory(node.Value.Data);
+                }
+            }
             _map.Clear();
             _lruList.Clear();
         }

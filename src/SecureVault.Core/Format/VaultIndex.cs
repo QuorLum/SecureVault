@@ -75,6 +75,46 @@ public sealed class IndexEntry
 
     [IgnoreMember]
     public bool IsAvailable { get; set; } = true;
+
+    public void ClearAndZero()
+    {
+        VaultIndex.WipeString(FileName);
+        FileName = string.Empty;
+
+        VaultIndex.WipeString(VirtualFolderPath);
+        VirtualFolderPath = string.Empty;
+
+        VaultIndex.WipeString(Notes);
+        Notes = string.Empty;
+
+        if (Tags != null)
+        {
+            for (int i = 0; i < Tags.Length; i++)
+            {
+                VaultIndex.WipeString(Tags[i]);
+            }
+            Tags = Array.Empty<string>();
+        }
+
+        if (PlaintextSHA256 != null)
+        {
+            System.Security.Cryptography.CryptographicOperations.ZeroMemory(PlaintextSHA256);
+        }
+
+        if (FileSalt != null)
+        {
+            System.Security.Cryptography.CryptographicOperations.ZeroMemory(FileSalt);
+        }
+
+        if (Chunks != null)
+        {
+            foreach (var chunk in Chunks)
+            {
+                chunk.ClearAndZero();
+            }
+            Chunks.Clear();
+        }
+    }
 }
 
 [MessagePackObject]
@@ -94,15 +134,49 @@ public sealed class VaultIndex
     public List<IndexEntry> Entries => _entries;
     public ulong Version { get; set; } = 1;
 
-    public byte[] Serialize()
+    public void ClearAndZero()
     {
-        var data = new VaultIndexData { Entries = Entries, IndexVersion = Version };
-        return MessagePackSerializer.Serialize(data);
+        foreach (var entry in _entries)
+        {
+            entry.ClearAndZero();
+        }
+        _entries.Clear();
+        Version = 0;
     }
 
-    public static VaultIndex Deserialize(ReadOnlySpan<byte> bytes)
+    internal static void WipeString(string? str)
     {
-        var data = MessagePackSerializer.Deserialize<VaultIndexData>(bytes.ToArray());
+        if (string.IsNullOrEmpty(str) || object.ReferenceEquals(str, string.Empty)) return;
+
+        var interned = string.IsInterned(str);
+        if (interned != null && object.ReferenceEquals(interned, str))
+        {
+            return;
+        }
+
+        unsafe
+        {
+            fixed (char* ptr = str)
+            {
+                for (int i = 0; i < str.Length; i++)
+                {
+                    ptr[i] = '\0';
+                }
+            }
+        }
+    }
+
+    public byte[] Serialize()
+    {
+        using var writer = new ZeroingBufferWriter();
+        var data = new VaultIndexData { Entries = Entries, IndexVersion = Version };
+        MessagePackSerializer.Serialize(writer, data);
+        return writer.WrittenSpan.ToArray();
+    }
+
+    public static VaultIndex Deserialize(ReadOnlyMemory<byte> bytes)
+    {
+        var data = MessagePackSerializer.Deserialize<VaultIndexData>(bytes);
         var index = new VaultIndex();
         if (data != null)
         {
@@ -125,8 +199,15 @@ public sealed class VaultIndex
         ReedSolomonCodec rsCodec)
     {
         Version++;
-        byte[] serialized = Serialize();
-        var (ciphertext, nonce, tag) = encryption.EncryptIndex(serialized);
+        byte[] ciphertext;
+        byte[] nonce;
+        byte[] tag;
+        using (var writer = new ZeroingBufferWriter())
+        {
+            var data = new VaultIndexData { Entries = Entries, IndexVersion = Version };
+            MessagePackSerializer.Serialize(writer, data);
+            (ciphertext, nonce, tag) = encryption.EncryptIndex(writer.WrittenSpan);
+        }
 
         // Header for index payload on disk: 12-byte nonce + 16-byte tag + 4-byte ciphertext len + ciphertext + RS parity
         byte[] rsParity = rsCodec.Encode(ciphertext);
@@ -216,6 +297,67 @@ public sealed class VaultIndex
         }
 
         byte[] plaintext = encryption.DecryptIndex(repairedCiphertext, nonce, tag);
-        return Deserialize(plaintext);
+        try
+        {
+            return Deserialize(plaintext.AsMemory());
+        }
+        finally
+        {
+            System.Security.Cryptography.CryptographicOperations.ZeroMemory(plaintext);
+        }
+    }
+}
+
+internal sealed class ZeroingBufferWriter : System.Buffers.IBufferWriter<byte>, IDisposable
+{
+    private byte[] _buffer;
+    private int _written;
+
+    public ZeroingBufferWriter(int initialCapacity = 4096)
+    {
+        _buffer = new byte[initialCapacity];
+    }
+
+    public ReadOnlySpan<byte> WrittenSpan => _buffer.AsSpan(0, _written);
+    public int WrittenCount => _written;
+
+    public void Advance(int count)
+    {
+        _written += count;
+    }
+
+    public Memory<byte> GetMemory(int sizeHint = 0)
+    {
+        EnsureCapacity(sizeHint);
+        return _buffer.AsMemory(_written);
+    }
+
+    public Span<byte> GetSpan(int sizeHint = 0)
+    {
+        EnsureCapacity(sizeHint);
+        return _buffer.AsSpan(_written);
+    }
+
+    private void EnsureCapacity(int sizeHint)
+    {
+        int needed = sizeHint <= 0 ? 1024 : sizeHint;
+        if (_written + needed > _buffer.Length)
+        {
+            int newCap = Math.Max(_buffer.Length * 2, _written + needed);
+            byte[] newBuf = new byte[newCap];
+            Buffer.BlockCopy(_buffer, 0, newBuf, 0, _written);
+            System.Security.Cryptography.CryptographicOperations.ZeroMemory(_buffer);
+            _buffer = newBuf;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_buffer != null)
+        {
+            System.Security.Cryptography.CryptographicOperations.ZeroMemory(_buffer);
+            _buffer = Array.Empty<byte>();
+            _written = 0;
+        }
     }
 }

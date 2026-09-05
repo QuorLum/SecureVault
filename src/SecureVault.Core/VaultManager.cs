@@ -517,6 +517,8 @@ public sealed class VaultManager : IDisposable
     /// <summary>
     /// Locks the vault and zeros all cryptographic keys from memory (A03, A21, M04, M05).
     /// </summary>
+    public bool IsDisposed => _disposed;
+
     public void Lock() => Dispose();
 
     public void Dispose()
@@ -536,6 +538,7 @@ public sealed class VaultManager : IDisposable
             catch { }
 
             _cache.Dispose();
+            _index.ClearAndZero();
             _encryption.Dispose();
             _masterKey.Dispose();
             _stream.Dispose();
