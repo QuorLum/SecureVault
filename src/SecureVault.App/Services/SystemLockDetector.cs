@@ -14,6 +14,7 @@ public sealed class SystemLockDetector : IDisposable
     {
         _onLockAction = onLockAction ?? throw new ArgumentNullException(nameof(onLockAction));
         SystemEvents.SessionSwitch += OnSessionSwitch;
+        SystemEvents.PowerModeChanged += OnPowerModeChanged;
     }
 
     private void OnSessionSwitch(object sender, SessionSwitchEventArgs e)
@@ -24,10 +25,19 @@ public sealed class SystemLockDetector : IDisposable
         }
     }
 
+    private void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
+    {
+        if (e.Mode == PowerModes.Suspend)
+        {
+            _onLockAction();
+        }
+    }
+
     public void Dispose()
     {
         if (_disposed) return;
         SystemEvents.SessionSwitch -= OnSessionSwitch;
+        SystemEvents.PowerModeChanged -= OnPowerModeChanged;
         _disposed = true;
     }
 }

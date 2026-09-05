@@ -9,7 +9,7 @@ using Windows.Storage.Streams;
 
 namespace SecureVault.App.ViewModels;
 
-public partial class PhotoViewerViewModel : ObservableObject
+public partial class PhotoViewerViewModel : ObservableObject, IDisposable
 {
     private readonly VaultManager _vault;
     private readonly List<IndexEntry> _photoEntries;
@@ -219,5 +219,11 @@ public partial class PhotoViewerViewModel : ObservableObject
             i++;
         }
         return $"{d:0.##} {suffixes[i]}";
+    }
+
+    public void Dispose()
+    {
+        DisplayImage = null;
+        _photoEntries.Clear();
     }
 }

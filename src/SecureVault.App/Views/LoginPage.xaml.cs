@@ -28,6 +28,7 @@ public sealed partial class LoginPage : Page
 
         ViewModel.OnUnlockSuccess = vault =>
         {
+            Services.VaultSessionManager.Instance.StartSession(vault, Frame);
             Frame.Navigate(typeof(MainLibraryPage), vault);
             return Task.CompletedTask;
         };

@@ -17,6 +17,8 @@ public partial class NotesEditorViewModel : ObservableObject, IDisposable
     private bool _hasUnsavedChanges;
     private bool _disposed;
 
+    public NoteDocument Document => _document;
+    public bool HasUnsavedChanges => _hasUnsavedChanges;
     public IndexEntry? CurrentEntry => _currentEntry;
 
     [ObservableProperty]

@@ -12,8 +12,6 @@ namespace SecureVault.App.Views;
 public sealed partial class MainLibraryPage : Page
 {
     public MainLibraryViewModel? ViewModel { get; private set; }
-    private IdleLockService? _idleLockService;
-    private SystemLockDetector? _systemLockDetector;
 
     public MainLibraryPage()
     {
@@ -28,11 +26,6 @@ public sealed partial class MainLibraryPage : Page
         {
             ViewModel = new MainLibraryViewModel(vault);
             DataContext = ViewModel;
-
-            ViewModel.OnLockRequested = () =>
-            {
-                Frame.Navigate(typeof(LoginPage));
-            };
 
             ViewModel.OnOpenFileRequested = async item =>
             {
@@ -137,37 +130,11 @@ public sealed partial class MainLibraryPage : Page
             ViewModel.OnPromptRename = PromptRenameAsync;
             ViewModel.OnConfirmAction = ConfirmActionAsync;
 
-            // Auto-lock on 5 minutes idle or Windows workstation lock (A08, M08)
-            _idleLockService?.Dispose();
-            _idleLockService = new IdleLockService(TimeSpan.FromMinutes(5), () =>
+            ViewModel.OnLockRequested = () =>
             {
-                DispatcherQueue.TryEnqueue(() =>
-                {
-                    vault.Lock();
-                    Frame.Navigate(typeof(LoginPage));
-                });
-            });
-            _idleLockService.Start();
-
-            _systemLockDetector?.Dispose();
-            _systemLockDetector = new SystemLockDetector(() =>
-            {
-                DispatcherQueue.TryEnqueue(() =>
-                {
-                    vault.Lock();
-                    Frame.Navigate(typeof(LoginPage));
-                });
-            });
+                _ = VaultSessionManager.Instance.TriggerLockAsync(LockTriggerReason.ManualLock);
+            };
         }
-    }
-
-    protected override void OnNavigatedFrom(NavigationEventArgs e)
-    {
-        base.OnNavigatedFrom(e);
-        _idleLockService?.Dispose();
-        _idleLockService = null;
-        _systemLockDetector?.Dispose();
-        _systemLockDetector = null;
     }
 
     private async Task<IReadOnlyList<string>> PickFilesToAddAsync()
