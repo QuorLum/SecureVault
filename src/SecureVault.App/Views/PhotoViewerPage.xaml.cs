@@ -25,6 +25,7 @@ public sealed partial class PhotoViewerPage : Page
         {
             ViewModel = new PhotoViewerViewModel(vault, entries, index);
             DataContext = ViewModel;
+            Bindings.Update();
 
             ViewModel.OnCloseRequested = () =>
             {

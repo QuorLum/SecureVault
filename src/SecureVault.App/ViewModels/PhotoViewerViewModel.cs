@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using SecureVault.Core;
 using SecureVault.Core.Format;
 using SecureVault.Core.Media;
+using SecureVault.App.Diagnostics;
 using Windows.Storage.Streams;
 
 namespace SecureVault.App.ViewModels;
@@ -79,8 +80,9 @@ public partial class PhotoViewerViewModel : ObservableObject, IDisposable
                 ExifData = ExifMetadataReader.Read(stream);
                 stream.Seek(0, SeekOrigin.Begin);
             }
-            catch
+            catch (Exception ex)
             {
+                CrashLog.Trace("PhotoViewer-Exif", ex);
                 ExifData = null;
             }
 
@@ -103,8 +105,9 @@ public partial class PhotoViewerViewModel : ObservableObject, IDisposable
             bmp.SetSource(ras);
             DisplayImage = bmp;
         }
-        catch
+        catch (Exception ex)
         {
+            CrashLog.Write("PhotoViewer-Load", ex);
             DimensionsText = "Preview Unavailable";
             DisplayImage = null;
         }

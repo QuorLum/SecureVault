@@ -25,6 +25,7 @@ public sealed partial class PdfViewerPage : Page
         {
             ViewModel = new PdfViewerViewModel(vault, entry);
             DataContext = ViewModel;
+            Bindings.Update();
 
             ViewModel.OnCloseRequested = () =>
             {

@@ -30,5 +30,13 @@ public sealed partial class SettingsPage : Page
         {
             ViewModel = new SettingsViewModel(null, IntPtr.Zero);
         }
+
+        DataContext = ViewModel;
+        Bindings.Update();
+    }
+
+    private void OnBackClicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (Frame.CanGoBack) Frame.GoBack();
     }
 }

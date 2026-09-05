@@ -25,10 +25,12 @@ public sealed partial class MainLibraryPage : Page
 
         if (e.Parameter is VaultManager vault)
         {
-            ViewModel = new MainLibraryViewModel(vault);
-            DataContext = ViewModel;
+            if (ViewModel == null || ViewModel.Vault != vault)
+            {
+                ViewModel = new MainLibraryViewModel(vault);
+                DataContext = ViewModel;
 
-            ViewModel.OnOpenFileRequested = async item =>
+                ViewModel.OnOpenFileRequested = async item =>
             {
                 var ext = System.IO.Path.GetExtension(item.FileName).ToLowerInvariant();
                 var cat = (Core.Organization.FileCategory)item.Category;
@@ -136,7 +138,14 @@ public sealed partial class MainLibraryPage : Page
                 _ = VaultSessionManager.Instance.TriggerLockAsync(LockTriggerReason.ManualLock);
             };
         }
+        else
+        {
+            ViewModel.RefreshData();
+        }
+
+        Bindings.Update();
     }
+}
 
     private async Task<IReadOnlyList<string>> PickFilesToAddAsync()
     {

@@ -17,9 +17,25 @@ public sealed partial class FileListView : UserControl
         InitializeComponent();
     }
 
+    private FileItemViewModel? ExtractItem(object sender)
+    {
+        if (sender is FrameworkElement fe)
+        {
+            if (fe.DataContext is FileItemViewModel vm) return vm;
+            if (fe.Tag is FileItemViewModel tagVm) return tagVm;
+        }
+        if (sender is MenuFlyoutItem mfi)
+        {
+            if (mfi.DataContext is FileItemViewModel vm) return vm;
+            if (mfi.Tag is FileItemViewModel tagVm) return tagVm;
+        }
+        return FileListViewControl.SelectedItem as FileItemViewModel;
+    }
+
     private void OnItemDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
-        if (FileListViewControl.SelectedItem is FileItemViewModel item)
+        var item = ExtractItem(e.OriginalSource) ?? ExtractItem(sender);
+        if (item != null)
         {
             if (item.IsFolder)
             {
@@ -38,7 +54,8 @@ public sealed partial class FileListView : UserControl
 
     private void OnOpenClicked(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             if (item.IsFolder)
                 ViewModel?.NavigateToFolder(item.FileGuid);
@@ -49,7 +66,8 @@ public sealed partial class FileListView : UserControl
 
     private async void OnPropertiesClicked(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             try
             {
@@ -62,44 +80,41 @@ public sealed partial class FileListView : UserControl
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error showing properties: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Properties dialog error: {ex.Message}");
             }
         }
     }
 
     private async void OnReplaceClicked(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item && ViewModel?.Vault != null)
+        var item = ExtractItem(sender);
+        if (item != null && ViewModel != null)
         {
             try
             {
                 var picker = new FileOpenPicker();
-                picker.FileTypeFilter.Add("*");
-
                 var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.CurrentWindow);
                 WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+                picker.FileTypeFilter.Add("*");
 
                 var file = await picker.PickSingleFileAsync();
                 if (file != null)
                 {
                     using var stream = await file.OpenStreamForReadAsync();
-                    var replacer = new FileReplaceOperation(ViewModel.Vault);
-                    await replacer.ReplaceFileDataAsync(item.FileGuid, stream);
-
-                    // Refresh files
-                    ViewModel.LoadFiles();
+                    await ViewModel.ReplaceFileContentAsync(item, stream);
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error replacing file: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"File replacement error: {ex.Message}");
             }
         }
     }
 
     private void OnExportClicked(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             ViewModel?.ExportFileCommand.Execute(item);
         }
@@ -107,7 +122,8 @@ public sealed partial class FileListView : UserControl
 
     private void OnCopyClicked(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             ViewModel?.CopyFileCommand.Execute(item);
         }
@@ -115,7 +131,8 @@ public sealed partial class FileListView : UserControl
 
     private void OnRenameClicked(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             ViewModel?.RenameFileCommand.Execute(item);
         }
@@ -123,7 +140,8 @@ public sealed partial class FileListView : UserControl
 
     private void OnToggleFavoriteClicked(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             ViewModel?.ToggleFavorite(item);
         }
@@ -131,7 +149,8 @@ public sealed partial class FileListView : UserControl
 
     private void OnDeleteClicked(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             ViewModel?.DeleteFileCommand.Execute(item);
         }

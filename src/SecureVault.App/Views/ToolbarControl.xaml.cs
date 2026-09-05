@@ -10,6 +10,7 @@ public sealed partial class ToolbarControl : UserControl
     public ToolbarControl()
     {
         InitializeComponent();
+        DataContextChanged += (s, e) => Bindings.Update();
     }
 
     private void OnSearchTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)

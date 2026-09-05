@@ -22,6 +22,7 @@ public sealed partial class FileManagerPage : Page
         {
             ViewModel = new FileManagerViewModel(vault);
             DataContext = ViewModel;
+            Bindings.Update();
 
             ViewModel.OnCloseRequested = () =>
             {

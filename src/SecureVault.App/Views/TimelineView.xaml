@@ -35,15 +35,17 @@
                                             BorderThickness="1" 
                                             CornerRadius="8" 
                                             Padding="10"
+                                            DataContext="{x:Bind}"
+                                            Tag="{x:Bind}"
                                             DoubleTapped="OnItemDoubleTapped">
                                         <Border.ContextFlyout>
                                             <MenuFlyout>
-                                                <MenuFlyoutItem Text="Open" Icon="OpenWith" Click="OnOpenClicked" FontWeight="SemiBold" />
-                                                <MenuFlyoutItem Text="Properties" Icon="Document" Click="OnPropertiesClicked" />
-                                                <MenuFlyoutItem Text="Export to Disk" Icon="Download" Click="OnExportClicked" />
-                                                <MenuFlyoutItem Text="Rename" Icon="Rename" Click="OnRenameClicked" />
+                                                <MenuFlyoutItem Text="Open" Icon="OpenWith" Tag="{x:Bind}" Click="OnOpenClicked" FontWeight="SemiBold" />
+                                                <MenuFlyoutItem Text="Properties" Icon="Document" Tag="{x:Bind}" Click="OnPropertiesClicked" />
+                                                <MenuFlyoutItem Text="Export to Disk" Icon="Download" Tag="{x:Bind}" Click="OnExportClicked" />
+                                                <MenuFlyoutItem Text="Rename" Icon="Rename" Tag="{x:Bind}" Click="OnRenameClicked" />
                                                 <MenuFlyoutSeparator />
-                                                <MenuFlyoutItem Text="Delete" Icon="Delete" Foreground="#FB7185" Click="OnDeleteClicked" />
+                                                <MenuFlyoutItem Text="Delete" Icon="Delete" Tag="{x:Bind}" Foreground="#FB7185" Click="OnDeleteClicked" />
                                             </MenuFlyout>
                                         </Border.ContextFlyout>
 

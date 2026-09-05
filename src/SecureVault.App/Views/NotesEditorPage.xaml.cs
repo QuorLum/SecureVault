@@ -25,6 +25,7 @@ public sealed partial class NotesEditorPage : Page
         {
             ViewModel = new NotesEditorViewModel(tuple.Item1, tuple.Item2);
             DataContext = ViewModel;
+            Bindings.Update();
 
             ViewModel.OnCloseRequested = () =>
             {

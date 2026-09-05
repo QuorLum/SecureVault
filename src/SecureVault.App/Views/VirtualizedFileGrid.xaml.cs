@@ -13,6 +13,31 @@ public sealed partial class VirtualizedFileGrid : UserControl
     public VirtualizedFileGrid()
     {
         InitializeComponent();
+
+        FileRepeater.ElementPrepared += (sender, args) =>
+        {
+            if (args.Element is FrameworkElement fe && ViewModel?.Files != null && args.Index >= 0 && args.Index < ViewModel.Files.Count)
+            {
+                var item = ViewModel.Files[args.Index];
+                fe.DataContext = item;
+                fe.Tag = item;
+            }
+        };
+    }
+
+    private static FileItemViewModel? ExtractItem(object sender)
+    {
+        if (sender is FrameworkElement fe)
+        {
+            if (fe.DataContext is FileItemViewModel vm) return vm;
+            if (fe.Tag is FileItemViewModel tagVm) return tagVm;
+        }
+        if (sender is MenuFlyoutItem mfi)
+        {
+            if (mfi.DataContext is FileItemViewModel vm) return vm;
+            if (mfi.Tag is FileItemViewModel tagVm) return tagVm;
+        }
+        return null;
     }
 
     private void OnItemPointerEntered(object sender, PointerRoutedEventArgs e)
@@ -35,7 +60,8 @@ public sealed partial class VirtualizedFileGrid : UserControl
 
     private void OnItemDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             if (item.IsFolder)
             {
@@ -50,7 +76,8 @@ public sealed partial class VirtualizedFileGrid : UserControl
 
     private void OnOpenClicked(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             if (item.IsFolder)
             {
@@ -70,7 +97,8 @@ public sealed partial class VirtualizedFileGrid : UserControl
 
     private void OnExportClicked(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             ViewModel?.ExportFileCommand.Execute(item);
         }
@@ -78,7 +106,8 @@ public sealed partial class VirtualizedFileGrid : UserControl
 
     private void OnCopyClicked(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             ViewModel?.CopyFileCommand.Execute(item);
         }
@@ -86,7 +115,8 @@ public sealed partial class VirtualizedFileGrid : UserControl
 
     private void OnRenameClicked(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             ViewModel?.RenameFileCommand.Execute(item);
         }
@@ -94,7 +124,8 @@ public sealed partial class VirtualizedFileGrid : UserControl
 
     private void OnToggleFavoriteClicked(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             ViewModel?.ToggleFavorite(item);
         }
@@ -102,7 +133,8 @@ public sealed partial class VirtualizedFileGrid : UserControl
 
     private void OnDeleteClicked(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             ViewModel?.DeleteFileCommand.Execute(item);
         }

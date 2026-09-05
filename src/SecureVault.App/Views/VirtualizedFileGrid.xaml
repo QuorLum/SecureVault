@@ -20,6 +20,8 @@
                             BorderThickness="1" 
                             CornerRadius="{StaticResource CardCornerRadius}" 
                             Padding="12"
+                            DataContext="{x:Bind}"
+                            Tag="{x:Bind}"
                             PointerEntered="OnItemPointerEntered"
                             PointerExited="OnItemPointerExited"
                             DoubleTapped="OnItemDoubleTapped"
@@ -27,13 +29,13 @@
                             AutomationProperties.Name="{x:Bind FileName}">
                         <Border.ContextFlyout>
                             <MenuFlyout>
-                                <MenuFlyoutItem Text="Open" Icon="OpenWith" Click="OnOpenClicked" FontWeight="SemiBold" />
-                                <MenuFlyoutItem Text="Export to Disk" Icon="Download" Click="OnExportClicked" />
-                                <MenuFlyoutItem Text="Make a Copy" Icon="Copy" Click="OnCopyClicked" />
-                                <MenuFlyoutItem Text="Rename" Icon="Rename" Click="OnRenameClicked" />
+                                <MenuFlyoutItem Text="Open" Icon="OpenWith" Click="OnOpenClicked" Tag="{x:Bind}" FontWeight="SemiBold" />
+                                <MenuFlyoutItem Text="Export to Disk" Icon="Download" Click="OnExportClicked" Tag="{x:Bind}" />
+                                <MenuFlyoutItem Text="Make a Copy" Icon="Copy" Click="OnCopyClicked" Tag="{x:Bind}" />
+                                <MenuFlyoutItem Text="Rename" Icon="Rename" Click="OnRenameClicked" Tag="{x:Bind}" />
                                 <MenuFlyoutSeparator />
-                                <MenuFlyoutItem Text="Toggle Favorite" Icon="Favorite" Click="OnToggleFavoriteClicked" />
-                                <MenuFlyoutItem Text="Delete" Icon="Delete" Foreground="#FB7185" Click="OnDeleteClicked" />
+                                <MenuFlyoutItem Text="Toggle Favorite" Icon="Favorite" Click="OnToggleFavoriteClicked" Tag="{x:Bind}" />
+                                <MenuFlyoutItem Text="Delete" Icon="Delete" Foreground="#FB7185" Click="OnDeleteClicked" Tag="{x:Bind}" />
                             </MenuFlyout>
                         </Border.ContextFlyout>
 

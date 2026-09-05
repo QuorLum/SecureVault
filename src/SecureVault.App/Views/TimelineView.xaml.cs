@@ -26,6 +26,7 @@ public sealed partial class TimelineView : UserControl
 
     private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
     {
+        Bindings.Update();
         RefreshTimeline();
         if (ViewModel != null)
         {
@@ -39,6 +40,16 @@ public sealed partial class TimelineView : UserControl
             };
             HookCollectionChanged();
         }
+    }
+
+    private static FileItemViewModel? ExtractItem(object sender)
+    {
+        if (sender is FrameworkElement fe)
+        {
+            if (fe.Tag is FileItemViewModel tagItem) return tagItem;
+            if (fe.DataContext is FileItemViewModel dcItem) return dcItem;
+        }
+        return null;
     }
 
     private void HookCollectionChanged()
@@ -81,7 +92,8 @@ public sealed partial class TimelineView : UserControl
 
     private void OnItemDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             ViewModel?.OpenFile(item);
         }
@@ -89,7 +101,8 @@ public sealed partial class TimelineView : UserControl
 
     private void OnOpenClicked(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             ViewModel?.OpenFile(item);
         }
@@ -97,7 +110,8 @@ public sealed partial class TimelineView : UserControl
 
     private async void OnPropertiesClicked(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             try
             {
@@ -117,7 +131,8 @@ public sealed partial class TimelineView : UserControl
 
     private void OnExportClicked(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             ViewModel?.ExportFileCommand.Execute(item);
         }
@@ -125,7 +140,8 @@ public sealed partial class TimelineView : UserControl
 
     private void OnRenameClicked(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             ViewModel?.RenameFileCommand.Execute(item);
         }
@@ -133,7 +149,8 @@ public sealed partial class TimelineView : UserControl
 
     private void OnDeleteClicked(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is FileItemViewModel item)
+        var item = ExtractItem(sender);
+        if (item != null)
         {
             ViewModel?.DeleteFileCommand.Execute(item);
         }

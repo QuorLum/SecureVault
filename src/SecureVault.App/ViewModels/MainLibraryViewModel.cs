@@ -451,6 +451,19 @@ public partial class MainLibraryViewModel : ObservableObject
         RefreshData();
     }
 
+    public async Task ReplaceFileContentAsync(FileItemViewModel? item, Stream newContent)
+    {
+        if (item == null || item.IsFolder) return;
+
+        await RunOperationAsync($"Updating {item.FileName}", async (_, ct) =>
+        {
+            await _vault.AddFileAsync(newContent, item.FileName, item.Entry.VirtualFolderPath, item.ProtectionMode, cancellationToken: ct);
+            _vault.DeleteFile(item.FileGuid);
+        });
+
+        RefreshData();
+    }
+
     [RelayCommand]
     public void ToggleFavorite(FileItemViewModel? item)
     {

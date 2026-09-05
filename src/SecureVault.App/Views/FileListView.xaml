@@ -32,18 +32,19 @@
                       DoubleTapped="OnItemDoubleTapped" RightTapped="OnItemRightTapped">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="vm:FileItemViewModel">
-                        <Grid ColumnDefinitions="32,*,95,80,125,95,50" Padding="8,6" VerticalAlignment="Center">
+                        <Grid ColumnDefinitions="32,*,95,80,125,95,50" Padding="8,6" VerticalAlignment="Center"
+                              DataContext="{x:Bind}" Tag="{x:Bind}">
                             <Grid.ContextFlyout>
                                 <MenuFlyout>
-                                    <MenuFlyoutItem Text="Open" Icon="OpenWith" Click="OnOpenClicked" FontWeight="SemiBold" />
-                                    <MenuFlyoutItem Text="Properties" Icon="Document" Click="OnPropertiesClicked" />
-                                    <MenuFlyoutItem Text="Replace Content" Icon="Refresh" Click="OnReplaceClicked" />
-                                    <MenuFlyoutItem Text="Export to Disk" Icon="Download" Click="OnExportClicked" />
-                                    <MenuFlyoutItem Text="Make a Copy" Icon="Copy" Click="OnCopyClicked" />
-                                    <MenuFlyoutItem Text="Rename" Icon="Rename" Click="OnRenameClicked" />
+                                    <MenuFlyoutItem Text="Open" Icon="OpenWith" Click="OnOpenClicked" Tag="{x:Bind}" FontWeight="SemiBold" />
+                                    <MenuFlyoutItem Text="Properties" Icon="Document" Click="OnPropertiesClicked" Tag="{x:Bind}" />
+                                    <MenuFlyoutItem Text="Replace Content" Icon="Refresh" Click="OnReplaceClicked" Tag="{x:Bind}" />
+                                    <MenuFlyoutItem Text="Export to Disk" Icon="Download" Click="OnExportClicked" Tag="{x:Bind}" />
+                                    <MenuFlyoutItem Text="Make a Copy" Icon="Copy" Click="OnCopyClicked" Tag="{x:Bind}" />
+                                    <MenuFlyoutItem Text="Rename" Icon="Rename" Click="OnRenameClicked" Tag="{x:Bind}" />
                                     <MenuFlyoutSeparator />
-                                    <MenuFlyoutItem Text="Toggle Favorite" Icon="Favorite" Click="OnToggleFavoriteClicked" />
-                                    <MenuFlyoutItem Text="Delete" Icon="Delete" Foreground="#FB7185" Click="OnDeleteClicked" />
+                                    <MenuFlyoutItem Text="Toggle Favorite" Icon="Favorite" Click="OnToggleFavoriteClicked" Tag="{x:Bind}" />
+                                    <MenuFlyoutItem Text="Delete" Icon="Delete" Foreground="#FB7185" Click="OnDeleteClicked" Tag="{x:Bind}" />
                                 </MenuFlyout>
                             </Grid.ContextFlyout>
 

@@ -26,6 +26,7 @@ public sealed partial class MediaPlayerPage : Page
         {
             ViewModel = new MediaPlayerViewModel(vault, entry);
             DataContext = ViewModel;
+            Bindings.Update();
 
             if (ViewModel.Player != null && !ViewModel.IsAudioOnly)
             {

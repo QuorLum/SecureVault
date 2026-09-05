@@ -10,5 +10,6 @@ public sealed partial class StatusBarControl : UserControl
     public StatusBarControl()
     {
         InitializeComponent();
+        DataContextChanged += (s, e) => Bindings.Update();
     }
 }
