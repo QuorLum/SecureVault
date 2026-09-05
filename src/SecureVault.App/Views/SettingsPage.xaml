@@ -104,6 +104,57 @@
                     </StackPanel>
                 </Border>
             </StackPanel>
+
+            <!-- SECTION 4: WINDOWS SYSTEM INTEGRATION & SHORTCUTS -->
+            <StackPanel Spacing="12">
+                <TextBlock Text="Windows Desktop &amp; System Integration" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+
+                <Border Background="#141417" BorderBrush="#27272A" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Manage desktop shortcuts, start menu integration, file associations, and system installation."
+                                   FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+
+                        <Grid ColumnSpacing="8" RowSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.CreateDesktopShortcutCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE7F4;" FontSize="13" Foreground="{StaticResource AppAccentBrush}" />
+                                    <TextBlock Text="Add Desktop Shortcut" FontSize="12" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.CreateStartMenuShortcutCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE718;" FontSize="13" Foreground="{StaticResource AppAccentBrush}" />
+                                    <TextBlock Text="Add Start Menu Shortcut" FontSize="12" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button Grid.Row="1" Grid.Column="0" HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.RegisterFileAssociationCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE8B7;" FontSize="13" Foreground="{StaticResource FastModeBrush}" />
+                                    <TextBlock Text="Associate .vault Files" FontSize="12" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.InstallToSystemCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE896;" FontSize="13" Foreground="#10B981" />
+                                    <TextBlock Text="Install / Move to Programs" FontSize="12" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </Page>

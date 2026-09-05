@@ -94,6 +94,32 @@ public sealed class VaultManager : IDisposable
 
         using var cacheKey = CacheEncryption.DeriveCacheKey(masterKey);
         _cache = new VaultCache(header.VaultUUID, cacheKey);
+
+        // Auto-heal legacy index entries where Category was unassigned (default 0 = Photos) for non-photo files
+        bool healed = false;
+        foreach (var entry in _index.Entries)
+        {
+            if (!entry.IsFolder && !entry.IsDeleted)
+            {
+                var detected = Organization.AutoCategorizer.Categorize(entry.FileName);
+                if (entry.Category == (byte)Organization.FileCategory.Photos && detected != Organization.FileCategory.Photos)
+                {
+                    entry.Category = (byte)detected;
+                    healed = true;
+                }
+            }
+        }
+        if (healed)
+        {
+            try
+            {
+                SaveIndexAndFooter();
+            }
+            catch
+            {
+                // Non-fatal if index cannot be immediately flushed on open
+            }
+        }
     }
 
     /// <summary>

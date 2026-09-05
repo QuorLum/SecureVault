@@ -2,6 +2,7 @@ using System.Buffers.Binary;
 using System.Security.Cryptography;
 using SecureVault.Core.Crypto;
 using SecureVault.Core.Format;
+using SecureVault.Core.Organization;
 
 namespace SecureVault.Core.Integrity;
 
@@ -38,6 +39,7 @@ public sealed class RecoveredFile
             FileSalt = new byte[16],
             DateAddedTicks = DateTime.UtcNow.Ticks,
             DateModifiedTicks = DateTime.UtcNow.Ticks,
+            Category = (byte)AutoCategorizer.Categorize(SuggestedFileName),
             VirtualFolderPath = "/Recovered",
             ChunkCount = (uint)Chunks.Count,
             FirstChunkOffset = Chunks.FirstOrDefault()?.AbsoluteOffset ?? 0,

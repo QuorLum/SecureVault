@@ -97,4 +97,59 @@ public class VaultLifecycleTests
             if (File.Exists(tempVaultPath + ".lock")) File.Delete(tempVaultPath + ".lock");
         }
     }
+
+    [Fact]
+    public async Task AddFile_AutoAssignsCategory_And_HealsLegacyEntries()
+    {
+        string tempVaultPath = Path.Combine(Path.GetTempPath(), $"categorize_test_{Guid.NewGuid():N}.vault");
+        string password = "TestPassword2026!";
+
+        try
+        {
+            var (vault, _) = await VaultManager.CreateAsync(
+                tempVaultPath,
+                password,
+                memoryCostKb: 65536,
+                iterations: 2,
+                parallelism: 2);
+
+            using (vault)
+            {
+                using var ms = new MemoryStream(new byte[] { 1, 2, 3, 4 });
+                var pdfEntry = await vault.AddFileAsync(ms, "report.pdf");
+                Assert.Equal((byte)Core.Organization.FileCategory.Documents, pdfEntry.Category);
+
+                ms.Position = 0;
+                var videoEntry = await vault.AddFileAsync(ms, "clip.mp4");
+                Assert.Equal((byte)Core.Organization.FileCategory.Videos, videoEntry.Category);
+
+                ms.Position = 0;
+                var audioEntry = await vault.AddFileAsync(ms, "song.mp3");
+                Assert.Equal((byte)Core.Organization.FileCategory.Audio, audioEntry.Category);
+
+                ms.Position = 0;
+                var notesEntry = await vault.AddFileAsync(ms, "todo.txt");
+                Assert.Equal((byte)Core.Organization.FileCategory.TextNotes, notesEntry.Category);
+
+                ms.Position = 0;
+                var photoEntry = await vault.AddFileAsync(ms, "photo.jpg");
+                Assert.Equal((byte)Core.Organization.FileCategory.Photos, photoEntry.Category);
+
+                // Simulate legacy bug: artificially reset clip.mp4's category to 0 (Photos)
+                videoEntry.Category = (byte)Core.Organization.FileCategory.Photos;
+            }
+
+            // Reopen vault: constructor should auto-heal videoEntry back to Videos
+            using (var reopened = await VaultManager.OpenAsync(tempVaultPath, password))
+            {
+                var healedVideo = reopened.Files.First(f => f.FileName == "clip.mp4");
+                Assert.Equal((byte)Core.Organization.FileCategory.Videos, healedVideo.Category);
+            }
+        }
+        finally
+        {
+            if (File.Exists(tempVaultPath)) File.Delete(tempVaultPath);
+            if (File.Exists(tempVaultPath + ".lock")) File.Delete(tempVaultPath + ".lock");
+        }
+    }
 }

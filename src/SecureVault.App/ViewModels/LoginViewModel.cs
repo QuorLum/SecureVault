@@ -155,6 +155,13 @@ public partial class LoginViewModel : ObservableObject
 
     public void InitializeStartupState()
     {
+        if (!string.IsNullOrWhiteSpace(App.StartupVaultPath) && File.Exists(App.StartupVaultPath))
+        {
+            VaultPath = App.StartupVaultPath;
+            CurrentViewMode = LoginViewMode.ReturningUserUnlock;
+            return;
+        }
+
         var lastVault = _settings.LastVaultPath;
         if (!string.IsNullOrWhiteSpace(lastVault) && File.Exists(lastVault))
         {

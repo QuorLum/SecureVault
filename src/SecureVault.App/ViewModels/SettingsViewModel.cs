@@ -27,6 +27,8 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string? _passwordHint;
 
+    private readonly AppSettingsService _settings = AppSettingsService.Instance;
+
     [ObservableProperty]
     private string _statusMessage = string.Empty;
 
@@ -42,12 +44,10 @@ public partial class SettingsViewModel : ObservableObject
     {
         try
         {
-            var settings = ApplicationData.Current.LocalSettings.Values;
-
-            IsScreenProtectionEnabled = settings.TryGetValue("ScreenProtection", out var sp) && sp is bool bsp && bsp;
-            AutoLockMinutes = settings.TryGetValue("AutoLockMinutes", out var alm) && alm is int ialm ? ialm : 10;
-            AutoLockOnSystemLock = !settings.TryGetValue("LockOnSystemLock", out var lsl) || (lsl is bool blsl && blsl);
-            DefaultProtectionModeIndex = settings.TryGetValue("DefaultProtectionMode", out var dpm) && dpm is int idpm ? idpm : 0;
+            IsScreenProtectionEnabled = _settings.ScreenProtection;
+            AutoLockMinutes = _settings.AutoLockMinutes;
+            AutoLockOnSystemLock = _settings.LockOnSystemLock;
+            DefaultProtectionModeIndex = _settings.DefaultProtectionMode;
 
             if (_vault != null)
             {
@@ -64,23 +64,23 @@ public partial class SettingsViewModel : ObservableObject
     partial void OnIsScreenProtectionEnabledChanged(bool value)
     {
         ScreenProtectionService.SetProtection(_windowHandle, value);
-        SaveSetting("ScreenProtection", value);
+        _settings.ScreenProtection = value;
         StatusMessage = value ? "Screen capture protection activated." : "Screen capture protection disabled.";
     }
 
     partial void OnAutoLockMinutesChanged(int value)
     {
-        SaveSetting("AutoLockMinutes", value);
+        _settings.AutoLockMinutes = value;
     }
 
     partial void OnAutoLockOnSystemLockChanged(bool value)
     {
-        SaveSetting("LockOnSystemLock", value);
+        _settings.LockOnSystemLock = value;
     }
 
     partial void OnDefaultProtectionModeIndexChanged(int value)
     {
-        SaveSetting("DefaultProtectionMode", value);
+        _settings.DefaultProtectionMode = value;
     }
 
     [RelayCommand]
@@ -99,12 +99,59 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    private static void SaveSetting(string key, object value)
+    [RelayCommand]
+    public void CreateDesktopShortcut()
     {
         try
         {
-            ApplicationData.Current.LocalSettings.Values[key] = value;
+            ShellIntegrationService.CreateDesktopShortcut();
+            StatusMessage = "Desktop shortcut created successfully.";
         }
-        catch { }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Failed to create Desktop shortcut: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public void CreateStartMenuShortcut()
+    {
+        try
+        {
+            ShellIntegrationService.CreateStartMenuShortcut();
+            StatusMessage = "Start Menu shortcut created successfully.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Failed to create Start Menu shortcut: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public void RegisterFileAssociation()
+    {
+        try
+        {
+            ShellIntegrationService.RegisterFileAssociation();
+            StatusMessage = ".vault file association registered with Windows.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Failed to register file association: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public void InstallToSystem()
+    {
+        try
+        {
+            bool ok = ShellIntegrationService.InstallToSystem(launchInstalled: false);
+            StatusMessage = ok ? "SecureVault installed to system Programs folder successfully." : "Application already running from system directory.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Installation error: {ex.Message}";
+        }
     }
 }

@@ -22,6 +22,7 @@ namespace SecureVault.App;
 public partial class App : Application
 {
     public static Window CurrentWindow { get; private set; } = null!;
+    public static string? StartupVaultPath { get; set; }
     private Window? _window;
     
     /// <summary>
@@ -73,5 +74,18 @@ public partial class App : Application
         _window = new MainWindow();
         CurrentWindow = _window;
         _window.Activate();
+
+        // Non-blocking background shell registration when run in production
+        if (!Services.ShellIntegrationService.IsRunningInDevelopmentEnvironment())
+        {
+            Task.Run(() =>
+            {
+                try
+                {
+                    Services.ShellIntegrationService.RegisterFileAssociation();
+                }
+                catch { }
+            });
+        }
     }
 }

@@ -72,6 +72,30 @@ public sealed class AppSettingsService
         }
     }
 
+    public bool ScreenProtection
+    {
+        get { lock (_lock) return _data.ScreenProtection; }
+        set { lock (_lock) _data.ScreenProtection = value; Save(); }
+    }
+
+    public int AutoLockMinutes
+    {
+        get { lock (_lock) return _data.AutoLockMinutes; }
+        set { lock (_lock) _data.AutoLockMinutes = value; Save(); }
+    }
+
+    public bool LockOnSystemLock
+    {
+        get { lock (_lock) return _data.LockOnSystemLock; }
+        set { lock (_lock) _data.LockOnSystemLock = value; Save(); }
+    }
+
+    public int DefaultProtectionMode
+    {
+        get { lock (_lock) return _data.DefaultProtectionMode; }
+        set { lock (_lock) _data.DefaultProtectionMode = value; Save(); }
+    }
+
     public IReadOnlyList<string> RecentVaults
     {
         get

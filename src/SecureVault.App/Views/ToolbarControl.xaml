@@ -7,69 +7,66 @@
     xmlns:vm="using:SecureVault.App.ViewModels"
     mc:Ignorable="d">
 
-    <Grid Background="#101013" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,0,0,1" Padding="16,10">
+    <Grid Background="#101013" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,0,0,1" Padding="14,8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
-        <!-- Left Actions: Add Operations -->
+        <!-- Left Actions: Compact Add DropDown, Paste, and Tools Menu -->
         <StackPanel Orientation="Horizontal" Spacing="8" Grid.Column="0">
-            <Button Content="+ Add Files" 
-                    Command="{x:Bind ViewModel.AddFilesCommand, Mode=OneWay}" 
-                    Style="{StaticResource AccentButtonStyle}" 
-                    AutomationProperties.Name="Add Files" />
-            
-            <Button Content="+ Add Folder" 
-                    Command="{x:Bind ViewModel.AddFolderCommand, Mode=OneWay}" 
-                    FontSize="12" 
-                    CornerRadius="{StaticResource ButtonCornerRadius}" 
-                    AutomationProperties.Name="Add Folder" />
+            <!-- Unified + Add Action Menu -->
+            <DropDownButton Style="{StaticResource AccentButtonStyle}" AutomationProperties.Name="Add Content">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <FontIcon Glyph="&#xE710;" FontSize="13" />
+                    <TextBlock Text="Add" FontSize="12" FontWeight="SemiBold" />
+                </StackPanel>
+                <DropDownButton.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Add Files..." Command="{x:Bind ViewModel.AddFilesCommand, Mode=OneWay}" Icon="OpenFile" />
+                        <MenuFlyoutItem Text="Add Folder..." Command="{x:Bind ViewModel.AddFolderCommand, Mode=OneWay}" Icon="Folder" />
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem Text="New Note" Command="{x:Bind ViewModel.CreateNewNoteCommand, Mode=OneWay}" Icon="Document" />
+                    </MenuFlyout>
+                </DropDownButton.Flyout>
+            </DropDownButton>
 
-            <Button Content="+ Note" 
-                    Command="{x:Bind ViewModel.CreateNewNoteCommand, Mode=OneWay}" 
+            <!-- Paste from Clipboard -->
+            <Button Command="{x:Bind ViewModel.PasteClipboardCommand, Mode=OneWay}" 
                     FontSize="12" 
                     CornerRadius="{StaticResource ButtonCornerRadius}" 
-                    AutomationProperties.Name="Create Note" />
+                    ToolTipService.ToolTip="Paste from Clipboard (Ctrl+V)"
+                    AutomationProperties.Name="Paste from Clipboard">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <FontIcon Glyph="&#xE77F;" FontSize="12" />
+                    <TextBlock Text="Paste" FontSize="12" />
+                </StackPanel>
+            </Button>
 
-            <Button Content="File Manager" 
-                    Command="{x:Bind ViewModel.OpenFileManagerCommand, Mode=OneWay}" 
-                    FontSize="12" 
-                    CornerRadius="{StaticResource ButtonCornerRadius}" 
-                    AutomationProperties.Name="File Manager" />
-
-            <Button Content="Backup" 
-                    Command="{x:Bind ViewModel.OpenBackupDialogCommand, Mode=OneWay}" 
-                    FontSize="12" 
-                    CornerRadius="{StaticResource ButtonCornerRadius}" 
-                    AutomationProperties.Name="Backup Vault" />
-
-            <Button Content="Vault Chain" 
-                    Command="{x:Bind ViewModel.OpenVaultChainHealthDialogCommand, Mode=OneWay}" 
-                    FontSize="12" 
-                    CornerRadius="{StaticResource ButtonCornerRadius}" 
-                    AutomationProperties.Name="Vault Chain Health" />
-
-            <Button Content="Paste" 
-                    Command="{x:Bind ViewModel.PasteClipboardCommand, Mode=OneWay}" 
-                    FontSize="12" 
-                    CornerRadius="{StaticResource ButtonCornerRadius}" 
-                    ToolTipService.ToolTip="Paste from Clipboard"
-                    AutomationProperties.Name="Paste from Clipboard" />
-
-            <Button Content="Compact" 
-                    Command="{x:Bind ViewModel.OpenCompactionCommand, Mode=OneWay}" 
-                    FontSize="12" 
-                    CornerRadius="{StaticResource ButtonCornerRadius}" 
-                    ToolTipService.ToolTip="Defragment and Compact Vault"
-                    AutomationProperties.Name="Compact Vault" />
+            <!-- Secondary Management Tools DropDown -->
+            <DropDownButton Style="{StaticResource DefaultButtonStyle}" ToolTipService.ToolTip="Vault Operations &amp; Maintenance">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <FontIcon Glyph="&#xEC7A;" FontSize="13" />
+                    <TextBlock Text="Tools" FontSize="12" />
+                </StackPanel>
+                <DropDownButton.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="File Manager" Command="{x:Bind ViewModel.OpenFileManagerCommand, Mode=OneWay}" Icon="BrowsePhotos" />
+                        <MenuFlyoutItem Text="Backup Vault..." Command="{x:Bind ViewModel.OpenBackupDialogCommand, Mode=OneWay}" Icon="Save" />
+                        <MenuFlyoutItem Text="Vault Chain Health..." Command="{x:Bind ViewModel.OpenVaultChainHealthDialogCommand, Mode=OneWay}" Icon="Repair" />
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem Text="Compact &amp; Defragment" Command="{x:Bind ViewModel.OpenCompactionCommand, Mode=OneWay}" Icon="Trim" />
+                    </MenuFlyout>
+                </DropDownButton.Flyout>
+            </DropDownButton>
         </StackPanel>
 
-        <!-- Center: Search Box -->
+        <!-- Center: Responsive Search Box -->
         <AutoSuggestBox Grid.Column="1" 
-                        MaxWidth="400" 
-                        Margin="16,0" 
+                        HorizontalAlignment="Stretch"
+                        MaxWidth="320" 
+                        Margin="12,0" 
                         PlaceholderText="Search files, tags, notes..." 
                         Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                         QueryIcon="Find" 
@@ -79,7 +76,7 @@
 
         <!-- Right: View Modes, Sort, Settings and Lock -->
         <StackPanel Orientation="Horizontal" Spacing="6" Grid.Column="2">
-            <!-- View Mode Switcher (D21) -->
+            <!-- View Mode Switcher -->
             <Button Command="{x:Bind ViewModel.ViewMode.SetGridModeCommand, Mode=OneWay}" 
                     ToolTipService.ToolTip="Grid View" Padding="6,4" Background="Transparent" BorderThickness="0">
                 <FontIcon Glyph="&#xE74C;" FontSize="14" />
@@ -93,20 +90,21 @@
                 <FontIcon Glyph="&#xE787;" FontSize="14" />
             </Button>
 
-            <ComboBox x:Name="SortCombo" SelectionChanged="OnSortSelectionChanged" SelectedIndex="0" Width="120" FontSize="12">
+            <ComboBox x:Name="SortCombo" SelectionChanged="OnSortSelectionChanged" SelectedIndex="0" Width="105" FontSize="12">
                 <ComboBoxItem Content="Name" Tag="Name" />
                 <ComboBoxItem Content="Date Added" Tag="DateAdded" />
-                <ComboBoxItem Content="Date Modified" Tag="DateModified" />
+                <ComboBoxItem Content="Date Mod" Tag="DateModified" />
                 <ComboBoxItem Content="Size" Tag="Size" />
                 <ComboBoxItem Content="Type" Tag="Type" />
             </ComboBox>
 
             <!-- Settings Button -->
             <Button Command="{x:Bind ViewModel.OpenSettingsCommand, Mode=OneWay}" 
-                    ToolTipService.ToolTip="Settings &amp; Security" Padding="6,4" Background="Transparent" BorderThickness="0">
+                    ToolTipService.ToolTip="Settings &amp; System Integration" Padding="6,4" Background="Transparent" BorderThickness="0">
                 <FontIcon Glyph="&#xE713;" FontSize="14" />
             </Button>
 
+            <!-- Lock Vault Button -->
             <Button Command="{x:Bind ViewModel.LockVaultCommand, Mode=OneWay}" 
                     ToolTipService.ToolTip="Lock Vault (Scrub Keys)" 
                     Background="#271016" 

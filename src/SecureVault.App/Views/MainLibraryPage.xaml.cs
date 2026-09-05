@@ -34,28 +34,54 @@ public sealed partial class MainLibraryPage : Page
                 Frame.Navigate(typeof(LoginPage));
             };
 
-            ViewModel.OnOpenFileRequested = item =>
+            ViewModel.OnOpenFileRequested = async item =>
             {
-                if (item.Category == Core.Organization.FileCategory.Photos)
+                var ext = System.IO.Path.GetExtension(item.FileName).ToLowerInvariant();
+                var cat = (Core.Organization.FileCategory)item.Category;
+
+                // 1. PDF Documents
+                if (ext == ".pdf")
+                {
+                    Frame.Navigate(typeof(PdfViewerPage), (vault, item.Entry));
+                }
+                // 2. Videos and Audio
+                else if (cat == Core.Organization.FileCategory.Videos || 
+                         cat == Core.Organization.FileCategory.Audio ||
+                         ext is ".mp4" or ".mkv" or ".avi" or ".mov" or ".webm" or ".flv" or ".wmv" or ".m4v" or ".3gp" or ".ts" or
+                                ".mp3" or ".flac" or ".wav" or ".aac" or ".ogg" or ".wma" or ".opus" or ".m4a" or ".aiff")
+                {
+                    Frame.Navigate(typeof(MediaPlayerPage), (vault, item.Entry));
+                }
+                // 3. Text Notes, Markdown, Code and Plaintext
+                else if (cat == Core.Organization.FileCategory.TextNotes ||
+                         ext is ".txt" or ".md" or ".json" or ".xml" or ".csv" or ".log" or ".ini" or ".yaml" or ".yml" or
+                                ".cs" or ".js" or ".ts" or ".html" or ".css" or ".py" or ".sql" or ".sh" or ".bat" or ".config")
+                {
+                    Frame.Navigate(typeof(NotesEditorPage), (vault, item.Entry));
+                }
+                // 4. Photos and Graphics
+                else if (cat == Core.Organization.FileCategory.Photos ||
+                         ext is ".jpg" or ".jpeg" or ".png" or ".gif" or ".webp" or ".bmp" or ".svg" or ".ico" or ".tiff" or ".tif" or
+                                ".heic" or ".heif" or ".cr2" or ".nef" or ".arw" or ".dng" or ".rw2")
                 {
                     var photos = ViewModel.Files
-                        .Where(f => f.Category == Core.Organization.FileCategory.Photos)
+                        .Where(f => f.Category == Core.Organization.FileCategory.Photos ||
+                                    (new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg", ".ico", ".tiff", ".tif", ".heic", ".heif" })
+                                    .Contains(System.IO.Path.GetExtension(f.FileName).ToLowerInvariant()))
                         .Select(f => f.Entry)
                         .ToList();
                     int idx = photos.FindIndex(p => p.FileGuid == item.FileGuid);
                     Frame.Navigate(typeof(PhotoViewerPage), (vault, photos, Math.Max(0, idx)));
                 }
-                else if (item.Category == Core.Organization.FileCategory.Videos || item.Category == Core.Organization.FileCategory.Audio)
+                else
                 {
-                    Frame.Navigate(typeof(MediaPlayerPage), (vault, item.Entry));
-                }
-                else if (item.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
-                {
-                    Frame.Navigate(typeof(PdfViewerPage), (vault, item.Entry));
-                }
-                else if (item.Category == Core.Organization.FileCategory.TextNotes || item.FileName.EndsWith(".md", StringComparison.OrdinalIgnoreCase) || item.FileName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
-                {
-                    Frame.Navigate(typeof(NotesEditorPage), (vault, item.Entry));
+                    // Fallback for binaries, archives, and unsupported formats: show file properties dialog
+                    var propVm = new FilePropertiesViewModel(item.Entry);
+                    var dialog = new FilePropertiesDialog(propVm)
+                    {
+                        XamlRoot = XamlRoot
+                    };
+                    await dialog.ShowAsync();
                 }
             };
 

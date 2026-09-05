@@ -7,55 +7,57 @@
     xmlns:vm="using:SecureVault.App.ViewModels"
     mc:Ignorable="d">
 
-    <Grid Padding="16,8">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+        <Grid Padding="16,8" MinWidth="560">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-        <!-- Column Headers -->
-        <Border Grid.Row="0" Background="#141417" CornerRadius="6" Padding="12,8" Margin="0,0,0,8" BorderBrush="#27272A" BorderThickness="1">
-            <Grid ColumnDefinitions="36,*,120,100,160,140,80">
-                <TextBlock Grid.Column="0" Text="" />
-                <Button Grid.Column="1" Content="Name" Click="OnSortByNameClicked" Style="{StaticResource TextBlockButtonStyle}" FontWeight="Bold" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                <Button Grid.Column="2" Content="Type" Click="OnSortByCategoryClicked" Style="{StaticResource TextBlockButtonStyle}" FontWeight="Bold" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                <Button Grid.Column="3" Content="Size" Click="OnSortBySizeClicked" Style="{StaticResource TextBlockButtonStyle}" FontWeight="Bold" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                <Button Grid.Column="4" Content="Date Modified" Click="OnSortByDateClicked" Style="{StaticResource TextBlockButtonStyle}" FontWeight="Bold" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                <TextBlock Grid.Column="5" Text="Security" FontWeight="Bold" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                <TextBlock Grid.Column="6" Text="Part" FontWeight="Bold" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-            </Grid>
-        </Border>
+            <!-- Column Headers -->
+            <Border Grid.Row="0" Background="#141417" CornerRadius="6" Padding="12,8" Margin="0,0,0,8" BorderBrush="#27272A" BorderThickness="1">
+                <Grid ColumnDefinitions="32,*,95,80,125,95,50">
+                    <TextBlock Grid.Column="0" Text="" />
+                    <Button Grid.Column="1" Content="Name" Click="OnSortByNameClicked" Style="{StaticResource TextBlockButtonStyle}" FontWeight="Bold" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Left" />
+                    <Button Grid.Column="2" Content="Type" Click="OnSortByCategoryClicked" Style="{StaticResource TextBlockButtonStyle}" FontWeight="Bold" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Left" />
+                    <Button Grid.Column="3" Content="Size" Click="OnSortBySizeClicked" Style="{StaticResource TextBlockButtonStyle}" FontWeight="Bold" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Left" />
+                    <Button Grid.Column="4" Content="Date Modified" Click="OnSortByDateClicked" Style="{StaticResource TextBlockButtonStyle}" FontWeight="Bold" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Left" />
+                    <TextBlock Grid.Column="5" Text="Security" FontWeight="Bold" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock Grid.Column="6" Text="Part" FontWeight="Bold" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </Grid>
+            </Border>
 
-        <!-- Detailed File List Items -->
-        <ListView Grid.Row="1" x:Name="FileListViewControl" ItemsSource="{x:Bind ViewModel.Files, Mode=OneWay}" SelectionMode="Single"
-                  DoubleTapped="OnItemDoubleTapped" RightTapped="OnItemRightTapped">
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="vm:FileItemViewModel">
-                    <Grid ColumnDefinitions="36,*,120,100,160,140,80" Padding="8,6" VerticalAlignment="Center">
-                        <Grid.ContextFlyout>
-                            <MenuFlyout>
-                                <MenuFlyoutItem Text="Open" Icon="OpenWith" Click="OnOpenClicked" FontWeight="SemiBold" />
-                                <MenuFlyoutItem Text="Properties" Icon="Document" Click="OnPropertiesClicked" />
-                                <MenuFlyoutItem Text="Replace Content" Icon="Refresh" Click="OnReplaceClicked" />
-                                <MenuFlyoutItem Text="Export to Disk" Icon="Download" Click="OnExportClicked" />
-                                <MenuFlyoutItem Text="Make a Copy" Icon="Copy" Click="OnCopyClicked" />
-                                <MenuFlyoutItem Text="Rename" Icon="Rename" Click="OnRenameClicked" />
-                                <MenuFlyoutSeparator />
-                                <MenuFlyoutItem Text="Toggle Favorite" Icon="Favorite" Click="OnToggleFavoriteClicked" />
-                                <MenuFlyoutItem Text="Delete" Icon="Delete" Foreground="#FB7185" Click="OnDeleteClicked" />
-                            </MenuFlyout>
-                        </Grid.ContextFlyout>
+            <!-- Detailed File List Items -->
+            <ListView Grid.Row="1" x:Name="FileListViewControl" ItemsSource="{x:Bind ViewModel.Files, Mode=OneWay}" SelectionMode="Single"
+                      DoubleTapped="OnItemDoubleTapped" RightTapped="OnItemRightTapped">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:FileItemViewModel">
+                        <Grid ColumnDefinitions="32,*,95,80,125,95,50" Padding="8,6" VerticalAlignment="Center">
+                            <Grid.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Text="Open" Icon="OpenWith" Click="OnOpenClicked" FontWeight="SemiBold" />
+                                    <MenuFlyoutItem Text="Properties" Icon="Document" Click="OnPropertiesClicked" />
+                                    <MenuFlyoutItem Text="Replace Content" Icon="Refresh" Click="OnReplaceClicked" />
+                                    <MenuFlyoutItem Text="Export to Disk" Icon="Download" Click="OnExportClicked" />
+                                    <MenuFlyoutItem Text="Make a Copy" Icon="Copy" Click="OnCopyClicked" />
+                                    <MenuFlyoutItem Text="Rename" Icon="Rename" Click="OnRenameClicked" />
+                                    <MenuFlyoutSeparator />
+                                    <MenuFlyoutItem Text="Toggle Favorite" Icon="Favorite" Click="OnToggleFavoriteClicked" />
+                                    <MenuFlyoutItem Text="Delete" Icon="Delete" Foreground="#FB7185" Click="OnDeleteClicked" />
+                                </MenuFlyout>
+                            </Grid.ContextFlyout>
 
-                        <FontIcon Grid.Column="0" Glyph="{x:Bind IconGlyph}" FontSize="16" Foreground="{StaticResource AppAccentBrush}" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="1" Text="{x:Bind FileName}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                        <TextBlock Grid.Column="2" Text="{x:Bind CategoryName}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="3" Text="{x:Bind FormattedSize}" FontSize="11" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="4" Text="{x:Bind FormattedDate}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="5" Text="{x:Bind ProtectionModeBadge}" FontSize="11" Foreground="#10B981" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="6" Text="{x:Bind Entry.PartIndex}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
-                    </Grid>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-    </Grid>
+                            <FontIcon Grid.Column="0" Glyph="{x:Bind IconGlyph}" FontSize="15" Foreground="{StaticResource AppAccentBrush}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{x:Bind FileName}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,8,0" />
+                            <TextBlock Grid.Column="2" Text="{x:Bind CategoryName}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Grid.Column="3" Text="{x:Bind FormattedSize}" FontSize="11" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Grid.Column="4" Text="{x:Bind FormattedDate}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Grid.Column="5" Text="{x:Bind ProtectionModeBadge}" FontSize="11" Foreground="#10B981" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Grid.Column="6" Text="{x:Bind Entry.PartIndex}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+    </ScrollViewer>
 </UserControl>

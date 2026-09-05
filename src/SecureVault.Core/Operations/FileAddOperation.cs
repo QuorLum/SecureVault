@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using SecureVault.Core.Crypto;
 using SecureVault.Core.Format;
+using SecureVault.Core.Organization;
 
 namespace SecureVault.Core.Operations;
 
@@ -132,6 +133,7 @@ public sealed class FileAddOperation
             FileSalt = fileSalt,
             DateAddedTicks = DateTime.UtcNow.Ticks,
             DateModifiedTicks = DateTime.UtcNow.Ticks,
+            Category = (byte)AutoCategorizer.Categorize(fileName),
             VirtualFolderPath = virtualPath,
             ChunkCount = (uint)chunkEntries.Count,
             FirstChunkOffset = firstChunkOffset,

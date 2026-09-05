@@ -1,25 +1,47 @@
 using System;
+using System.IO;
 using System.Threading;
+using SecureVault.App.Services;
 
 namespace SecureVault.App;
 
 /// <summary>
-/// Custom entry point enabling seamless single-file unpackaged Windows App SDK runtime resolution.
+/// Custom entry point enabling single-file unpackaged execution, CLI installation/uninstallation,
+/// and automated shell integration.
 /// </summary>
 public static class Program
 {
     [STAThread]
     public static void Main(string[] args)
     {
-
         AppDomain.CurrentDomain.UnhandledException += (s, e) =>
         {
             try
             {
-                System.IO.File.WriteAllText("startup_crash.log", $"[{DateTime.Now:HH:mm:ss.fff}] UNHANDLED: {e.ExceptionObject}\n");
+                File.WriteAllText("startup_crash.log", $"[{DateTime.Now:HH:mm:ss.fff}] UNHANDLED: {e.ExceptionObject}\n");
             }
             catch { }
         };
+
+        // Handle single-file CLI installation and setup commands
+        if (args.Length > 0)
+        {
+            string first = args[0].Trim().ToLowerInvariant();
+            if (first is "--install" or "--setup" or "/install" or "/setup")
+            {
+                ShellIntegrationService.InstallToSystem(launchInstalled: true);
+                return;
+            }
+            if (first is "--uninstall" or "/uninstall")
+            {
+                ShellIntegrationService.Uninstall();
+                return;
+            }
+            if (File.Exists(args[0]) && args[0].EndsWith(".vault", StringComparison.OrdinalIgnoreCase))
+            {
+                App.StartupVaultPath = Path.GetFullPath(args[0]);
+            }
+        }
 
         Environment.SetEnvironmentVariable("MICROSOFT_WINDOWSAPPRUNTIME_BASE_DIRECTORY", AppContext.BaseDirectory);
         WinRT.ComWrappersSupport.InitializeComWrappers();

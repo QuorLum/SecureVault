@@ -1,23 +1,29 @@
+using System.IO;
+using System.Text.Json;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Graphics;
-using Windows.Storage;
 
 namespace SecureVault.App.Services;
 
 /// <summary>
 /// Persists and restores window geometry and maximized state across application sessions (N20).
+/// Uses local JSON config safe for unpackaged desktop execution.
 /// </summary>
 public static class WindowStateService
 {
-    private const string WidthKey = "Window_Width";
-    private const string HeightKey = "Window_Height";
-    private const string XKey = "Window_X";
-    private const string YKey = "Window_Y";
-    private const string MaximizedKey = "Window_IsMaximized";
+    private static readonly string StateFilePath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "SecureVault", "window_state.json");
 
-    private const int DefaultWidth = 1200;
-    private const int DefaultHeight = 800;
+    private sealed class WindowStateModel
+    {
+        public int Width { get; set; } = 1280;
+        public int Height { get; set; } = 800;
+        public int? X { get; set; }
+        public int? Y { get; set; }
+        public bool IsMaximized { get; set; } = true; // Default to full screen / maximized
+    }
 
     public static void RestoreWindowState(Window window)
     {
@@ -28,21 +34,32 @@ public static class WindowStateService
             var appWindow = window.AppWindow;
             if (appWindow == null) return;
 
-            var settings = ApplicationData.Current.LocalSettings.Values;
-
-            int width = settings.TryGetValue(WidthKey, out var w) && w is int iw ? iw : DefaultWidth;
-            int height = settings.TryGetValue(HeightKey, out var h) && h is int ih ? ih : DefaultHeight;
-            bool isMaximized = settings.TryGetValue(MaximizedKey, out var m) && m is bool bm && bm;
-
-            appWindow.Resize(new SizeInt32(width, height));
-
-            if (settings.TryGetValue(XKey, out var x) && settings.TryGetValue(YKey, out var y) &&
-                x is int ix && y is int iy)
+            WindowStateModel state = new();
+            if (File.Exists(StateFilePath))
             {
-                appWindow.Move(new PointInt32(ix, iy));
+                try
+                {
+                    var json = File.ReadAllText(StateFilePath);
+                    state = JsonSerializer.Deserialize<WindowStateModel>(json) ?? new();
+                }
+                catch
+                {
+                    state = new();
+                }
             }
 
-            if (isMaximized)
+            if (state.Width > 300 && state.Height > 300)
+            {
+                appWindow.Resize(new SizeInt32(state.Width, state.Height));
+            }
+
+            if (state.X.HasValue && state.Y.HasValue)
+            {
+                appWindow.Move(new PointInt32(state.X.Value, state.Y.Value));
+            }
+
+            // User requirement: app should open in full screen / maximized
+            if (state.IsMaximized)
             {
                 if (appWindow.Presenter is OverlappedPresenter presenter)
                 {
@@ -52,7 +69,14 @@ public static class WindowStateService
         }
         catch
         {
-            // Fallback gracefully to default WinUI window dimensions
+            try
+            {
+                if (window.AppWindow?.Presenter is OverlappedPresenter presenter)
+                {
+                    presenter.Maximize();
+                }
+            }
+            catch { }
         }
     }
 
@@ -65,23 +89,33 @@ public static class WindowStateService
             var appWindow = window.AppWindow;
             if (appWindow == null) return;
 
-            var settings = ApplicationData.Current.LocalSettings.Values;
-
             bool isMaximized = appWindow.Presenter is OverlappedPresenter presenter &&
                                presenter.State == OverlappedPresenterState.Maximized;
 
-            settings[MaximizedKey] = isMaximized;
+            var state = new WindowStateModel
+            {
+                IsMaximized = isMaximized
+            };
 
             if (!isMaximized)
             {
                 var size = appWindow.Size;
                 var position = appWindow.Position;
 
-                settings[WidthKey] = size.Width;
-                settings[HeightKey] = size.Height;
-                settings[XKey] = position.X;
-                settings[YKey] = position.Y;
+                state.Width = size.Width;
+                state.Height = size.Height;
+                state.X = position.X;
+                state.Y = position.Y;
             }
+
+            var dir = Path.GetDirectoryName(StateFilePath);
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            var json = JsonSerializer.Serialize(state);
+            File.WriteAllText(StateFilePath, json);
         }
         catch
         {
