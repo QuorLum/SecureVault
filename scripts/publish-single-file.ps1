@@ -68,34 +68,8 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-# 5. Execute single-file publish for SecureVault.Installer
-Write-Host "[5/6] Publishing installation wizard ($Configuration | $Runtime)..." -ForegroundColor Green
-$installerTempDir = "$OutputDir\_installer_temp"
-& $dotnetCmd publish "$repoRoot\src\SecureVault.Installer\SecureVault.Installer.csproj" `
-    -c $Configuration `
-    -r $Runtime `
-    --self-contained true `
-    -p:PublishSingleFile=true `
-    -o $installerTempDir
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "Publish command for SecureVault.Installer failed with exit code $LASTEXITCODE."
-    exit $LASTEXITCODE
-}
-
-# Copy setup executable to publish folder
-$setupExeSource = Join-Path $installerTempDir "SecureVault-Setup.exe"
-$setupExeDest = Join-Path $OutputDir "SecureVault-Setup.exe"
-if (Test-Path $setupExeSource) {
-    Copy-Item -Path $setupExeSource -Destination $setupExeDest -Force
-}
-Remove-Item -Path $installerTempDir -Recurse -Force -ErrorAction SilentlyContinue
-
-# Copy AppIcon.ico to publish folder
-Copy-Item -Path "$repoRoot\src\SecureVault.App\Assets\AppIcon.ico" -Destination "$OutputDir\AppIcon.ico" -Force -ErrorAction SilentlyContinue
-
-# 6. Clean symbols and generate checksums
-Write-Host "[6/6] Generating release assets and checksums..." -ForegroundColor Green
+# 5. Clean symbols, copy assets, and generate checksums
+Write-Host "[5/5] Generating single-file release assets and checksums..." -ForegroundColor Green
 $exePath = Join-Path $OutputDir "SecureVault.exe"
 if (-not (Test-Path $exePath)) {
     # If output was named SecureVault.App.exe, rename to SecureVault.exe
@@ -108,36 +82,38 @@ if (-not (Test-Path $exePath)) {
     }
 }
 
+# Copy AppIcon.ico to publish folder
+Copy-Item -Path "$repoRoot\src\SecureVault.App\Assets\AppIcon.ico" -Destination "$OutputDir\AppIcon.ico" -Force -ErrorAction SilentlyContinue
+
 # Remove standalone pdb files from the release folder
 Get-ChildItem -Path $OutputDir -Filter "*.pdb" | Remove-Item -Force
 
-# Calculate SHA-256 hashes
-$hashApp = Get-FileHash -Path $exePath -Algorithm SHA256
-$hashSetup = Get-FileHash -Path $setupExeDest -Algorithm SHA256
+# Remove any legacy installer exe if present
+$legacySetup = Join-Path $OutputDir "SecureVault-Setup.exe"
+if (Test-Path $legacySetup) {
+    Remove-Item -Path $legacySetup -Force -ErrorAction SilentlyContinue
+}
 
-$checksumLines = @(
-    "$($hashApp.Hash.ToLower())  SecureVault.exe",
-    "$($hashSetup.Hash.ToLower())  SecureVault-Setup.exe"
-)
+# Calculate SHA-256 hash for the single executable
+$hashApp = Get-FileHash -Path $exePath -Algorithm SHA256
+$checksumLine = "$($hashApp.Hash.ToLower())  SecureVault.exe"
 $hashFile = Join-Path $OutputDir "SecureVault-win-x64.sha256"
-Set-Content -Path $hashFile -Value ($checksumLines -join "`r`n") -Encoding utf8
+Set-Content -Path $hashFile -Value $checksumLine -Encoding utf8
 
 # Create zip archive for release asset
 $zipFile = Join-Path $OutputDir "SecureVault-v1.0.0-win-x64.zip"
-Compress-Archive -Path $exePath, $setupExeDest, "$OutputDir\AppIcon.ico", "$repoRoot\LICENSE" -DestinationPath $zipFile -Force
+Compress-Archive -Path $exePath, "$OutputDir\AppIcon.ico", "$repoRoot\LICENSE" -DestinationPath $zipFile -Force
 
 $exeSizeMB = [math]::Round(((Get-Item $exePath).Length / 1MB), 2)
-$setupSizeMB = [math]::Round(((Get-Item $setupExeDest).Length / 1MB), 2)
 $zipSizeMB = [math]::Round(((Get-Item $zipFile).Length / 1MB), 2)
 
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Cyan
-Write-Host "  Packaging Complete!" -ForegroundColor Green
+Write-Host "  Single-File Packaging Complete!" -ForegroundColor Green
 Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host "  Application:  $exePath ($exeSizeMB MB)" -ForegroundColor White
-Write-Host "  Installer:    $setupExeDest ($setupSizeMB MB)" -ForegroundColor White
 Write-Host "  App SHA-256:  $($hashApp.Hash)" -ForegroundColor White
-Write-Host "  Setup SHA:    $($hashSetup.Hash)" -ForegroundColor White
 Write-Host "  Checksums:    $hashFile" -ForegroundColor White
 Write-Host "  Zip Archive:  $zipFile ($zipSizeMB MB)" -ForegroundColor White
 Write-Host "============================================================" -ForegroundColor Cyan
+
