@@ -2,36 +2,30 @@
 
 ## Current State: Emergency Usability Fix Directive (IN PROGRESS — NO-GO / BLOCKED)
 - **Directive Status:** Audit verdict revoked to **NO-GO / BLOCKED** following real-machine installation failure report.
-- **Branch:** `main`
+- **Branch:** `main` (Head: `6aa1889`)
+- **Safe Checkpoint:** Code compiles cleanly (`Build succeeded. 0 Warning(s) 0 Error(s)`). All changes committed and pushed to `main`.
 - **Active Task:** Emergency Usability Fix & Runtime UI Automation Certification.
-- **Blockers:**
-  - **BLK-1 (S0):** Installer does not install app on system.
-  - **BLK-2 (S0):** Opening ANY file inside vault does nothing (no viewer appears).
-  - **BLK-3 (S0):** Notes section unusable (create/edit/save/read notes fails).
-  - **BLK-4 (S0):** Clicking gear (Settings) icon crashes application.
+- **Blockers Status:**
+  - **BLK-4 (S0) [FIXED & COMMITTED `9cb4131`]:** Missing `StringToVisibleConverter` and `BoolToInvertedConverter` caused COMException / crash on Settings opening. Resolved in `Converters.cs` and `App.xaml`. Verified in real process.
+  - **BLK-2 (S0) [FIXED & COMMITTED `6aa1889`]:** Opening files did nothing because `ItemsRepeater` and `MenuFlyoutItem` lacked `DataContext`/`Tag` bindings, and viewer pages (`PdfViewerPage`, `PhotoViewerPage`, `MediaPlayerPage`, `MainLibraryPage`) did not call `Bindings.Update()` after setting `ViewModel` in `OnNavigatedTo`. Resolved across all views and view models.
+  - **BLK-3 (S0) [FIXED & COMMITTED `6aa1889`]:** Notes section unusable because `NotesEditorPage` `{x:Bind}` bindings were inert without `Bindings.Update()`, and file update/replace mechanism was missing in `MainLibraryViewModel`. Resolved in `NotesEditorPage`, `NotesEditorViewModel`, and `MainLibraryViewModel.ReplaceFileContentAsync`.
+  - **BLK-1 (S0) [DIAGNOSED, PENDING PAYLOAD PACKAGING]:** Single-file/installer copied only `SecureVault.exe` to `%LOCALAPPDATA%\Programs\SecureVault` without publishing the full Windows App SDK native runtime dependencies (`MRM.dll`, `DWriteCore.dll`, `resources.pri`, `runtimes/win-x64/native/`).
 
-### Current Progress:
-1. **Global Crash Instrumentation (Step 1) [COMPLETE]**:
-   - `UiActionTrace.cs`: 50-item ring buffer tracking views, user actions, and sanitizing secrets/passwords/keys.
-   - `CrashLog.cs`: Writing structured reports to `%LOCALAPPDATA%\SecureVault\logs\crash-YYYYMMDD-HHmmss-*.log` and rolling `app.log` with environment info, modules, full inner exception recursion, and UI history.
-   - `CrashReportWindow.cs`: Code-only resilient crash window with emergency vault locking, key zeroization, "Copy Details", "Open Log Folder", and exit controls.
-   - Global exception hooks wired in `App.xaml.cs` (`UnhandledException`, `AppDomain.UnhandledException`, `TaskScheduler.UnobservedTaskException`, `FirstChanceException`, and `DebugSettings.BindingFailed`).
-   - Sample crash log delivered to `audit/EVIDENCE/00-instrumentation/sample-crash.log`.
+### Completed Commits on `main`:
+1. `f861ca1` `feat(crash-reporting): add crash logging, UI trace, and in-app crash window`
+2. `9cb4131` `fix(BLK-4): missing StringToVisibleConverter and BoolToInvertedConverter — register in Converters.cs and App.xaml`
+3. `6aa1889` `fix(BLK-2, BLK-3): wire item data binding and invoke Bindings.Update on viewer navigation`
 
-2. **BLK-4 Reproduction & Root Cause Identification [COMPLETE]**:
-   - Captured real-world runtime crash in running `SecureVault.exe`:
-     `System.Runtime.InteropServices.COMException (0x80004005): Cannot find a resource with the given key: StringToVisibleConverter.`
-     at `SecureVault.App.Views.SettingsPage.SettingsPage_obj1_Bindings.LookupConverter(String key)`
-     at `SecureVault.App.Views.SettingsPage.SettingsPage_obj1_Bindings.Update_ViewModel_StatusMessage(...)`
-     Triggered by line 22 of `SettingsPage.xaml`.
-   - Identified additional missing converter `BoolToInvertedConverter` affecting `CompactionDialog.xaml` and `BackupRestoreDialog.xaml`.
-
-3. **Next Immediate Steps**:
-   - Commit BLK-4 fix (`fix(BLK-4): missing StringToVisibleConverter and BoolToInvertedConverter resource definitions`) with stack trace in commit message.
-   - Trace and diagnose BLK-2 (File open does nothing).
-   - Trace and diagnose BLK-3 (Notes section unusable).
-   - Trace and diagnose BLK-1 (Installer fails to install).
-   - Set up FlaUI test project `tests/SecureVault.UI.Tests/` with 10 smoke tests.
+### Next Immediate Steps Upon Session Resumption:
+1. **Fix BLK-1 (Installer payload packaging)**:
+   - Update `src/SecureVault.Installer/Services/InstallerEngine.cs` and `ShellIntegrationService.cs` to copy the complete directory tree rather than just `SecureVault.exe`.
+   - Update `installer/SecureVault.iss` and `scripts/publish-single-file.ps1` to bundle all runtime assets and test isolated execution.
+2. **Build FlaUI Automation Test Suite (`tests/SecureVault.UI.Tests/`)**:
+   - Implement the 10 smoke tests (`Smoke_01` through `Smoke_10`).
+   - Run tests and verify zero unhandled exceptions logged in `app.log`.
+3. **Collect Evidence & Author `audit/REPORT_v2.md`**:
+   - Collect screenshots in `audit/EVIDENCE/` and generate `CLICK_MATRIX.md`.
+   - Produce `docs/BUILD_AND_RELEASE.md`, `build/release.ps1`, and `docs/TROUBLESHOOTING.md`.
 
 
 ---
